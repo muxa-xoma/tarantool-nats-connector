@@ -1,0 +1,82 @@
+services:
+  nats:
+    image: nats:2.10.24-alpine3.21
+    container_name: nats
+    profiles:
+      - dev
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  tarantool-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: tarantool
+    profiles:
+      - dev
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  tarantool-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    container_name: tarantool
+    profiles:
+      - test
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      TT_CONFIG:
+      TT_INSTANCE_NAME:
+    command: [".rocks/bin/luatest", "./tests", "-v", "-c", "-o", "junit", "-n", "/results/report"]
+    volumes:
+      - ./tests/results:/results
+
+  tarantool-coverage:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    container_name: tarantool
+    profiles:
+      - coverage
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    environment:
+      TT_CONFIG:
+      TT_INSTANCE_NAME:
+    command: [ "/bin/sh", "-c",  ".rocks/bin/luatest ./tests --coverage; .rocks/bin/luacov .; grep -A999 '^Summary' /results/luacov.report.out" ]
+    volumes:
+      - ./tests/results:/results
+
+
+networks:
+  default:
+    name: tarantool-nats-connector

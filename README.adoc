@@ -1,0 +1,5 @@
+= Tarantool nats connector
+
+include::./doc/dependencies.adoc[leveloffset=+1]
+include::./doc/tests.adoc[leveloffset=+1]
+

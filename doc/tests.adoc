@@ -1,0 +1,58 @@
+= Окружения
+
+== Окружение разработчика
+
+=== Start
+
+[source,bash]
+----
+docker compose --profile dev up -d
+sleep 1
+docker exec -it tarantool console
+----
+
+=== Stop
+
+[source,bash]
+----
+docker compose --profile dev down -v --rmi local
+----
+
+== Тесты
+
+=== Start
+
+[source,bash]
+----
+docker compose --profile test up -d
+----
+
+=== Stop
+
+[source,bash]
+----
+docker compose --profile test down -v --rmi local
+----
+
+== Покрытие
+
+=== Start
+
+[source,bash]
+----
+docker compose --profile coverage up -d
+----
+
+=== Stop
+
+[source,bash]
+----
+docker compose --profile coverage down -v --rmi local
+----
+
+== Удаление созданных контейнеров
+
+[source,bash]
+----
+docker buildx prune -f
+----

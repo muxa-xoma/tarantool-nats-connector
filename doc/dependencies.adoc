@@ -1,0 +1,4 @@
+= Dependencies
+
+- tarantool:3.3.1
+- nats:2.10.24
