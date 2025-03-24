@@ -21,5 +21,6 @@ build = {
         ["nats"] = "init.lua",
         ["nats.version"] = "version/init.lua",
         ["nats.errors"] = "errors/init.lua",
+        ["nats.nuid"] = "nuid/init.lua",
     }
 }

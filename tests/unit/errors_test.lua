@@ -1,10 +1,16 @@
 local t = require('luatest')
-local group =  t.group('class-errors')
+local group =  t.group('enum-errors')
 
 local helper = require('tests.helpers.unit')
 
 local errors = require('nats.errors')
 
+
+group.before_all(
+        function(cg)
+            cg.helper = helper
+        end
+)
 
 group.test_types = function()
     for _, v in pairs(errors) do
