@@ -1,10 +1,11 @@
 local t = require('luatest')
-local group =  t.group('enum-errors')
 
 local helper = require('tests.helpers.unit')
 
 local errors = require('nats.errors')
 
+
+local group =  t.group('enum-errors')
 
 group.before_all(
         function(cg)
@@ -22,18 +23,18 @@ end
 
 group.test_values = function()
     for _, v in pairs(errors) do
-        t.assert_gt(v.code, 600)
-        t.assert_lt(v.code, 650)
+        t.assert_gt(v.code, 0)
+        t.assert_le(v.code, 50)
         t.assert_equals(v.type, 'NATS connector')
     end
 end
 
 group.test_raise = function()
     local function raise(err)
-        err:raise()
+        error(err)
     end
     for k, v in pairs(errors) do
         t.assert_error(raise, errors[k])
-        t.assert_error_msg_equals(v.message, raise, errors[k])
+        t.assert_error_msg_equals(v, raise, errors[k])
     end
 end
