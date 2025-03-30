@@ -5,7 +5,7 @@ local helper = require('tests.helpers.unit')
 local errors = require('nats.utils.errors')
 
 
-local group =  t.group('enum-errors')
+local group =  t.group('utils-enum-errors')
 
 group.before_all(
         function(cg)

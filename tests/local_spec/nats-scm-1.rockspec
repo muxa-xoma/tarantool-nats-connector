@@ -18,11 +18,12 @@ dependencies = {
 build = {
     type = "builtin",
     modules = {
-        ["nats"] = "init.lua",
         ["nats.utils.version"] = "utils/version/init.lua",
         ["nats.utils.errors"] = "utils/errors/init.lua",
         ["nats.utils.nuid"] = "utils/nuid/init.lua",
+        ["nats.utils.result"] = "utils/result/init.lua",
         ["nats.transport.tcp"] = "transport/tcp.lua",
         ["nats.transport"] = "transport/init.lua",
+        ["nats"] = "init.lua"
     }
 }

@@ -5,7 +5,7 @@ local helper = require('tests.helpers.unit')
 local nuid = require('nats.utils.nuid')
 
 
-local group =  t.group('module-nuid')
+local group =  t.group('utils-module-nuid')
 
 group.before_all(
         function(cg)

@@ -5,7 +5,7 @@ local helper = require('tests.helpers.unit')
 local version = require('nats.utils.version')
 
 
-local group =  t.group('module-version')
+local group =  t.group('utils-module-version')
 
 group.before_all(
         function(cg)
