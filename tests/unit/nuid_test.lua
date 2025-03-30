@@ -1,10 +1,11 @@
 local t = require('luatest')
-local group =  t.group('module-nuid')
 
 local helper = require('tests.helpers.unit')
 
-local nuid = require('nats.nuid')
+local nuid = require('nats.utils.nuid')
 
+
+local group =  t.group('module-nuid')
 
 group.before_all(
         function(cg)

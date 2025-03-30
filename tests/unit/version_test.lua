@@ -1,10 +1,11 @@
 local t = require('luatest')
-local group =  t.group('modules-version')
 
 local helper = require('tests.helpers.unit')
 
-local version = require('nats.version')
+local version = require('nats.utils.version')
 
+
+local group =  t.group('module-version')
 
 group.before_all(
         function(cg)

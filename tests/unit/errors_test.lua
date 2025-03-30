@@ -2,7 +2,7 @@ local t = require('luatest')
 
 local helper = require('tests.helpers.unit')
 
-local errors = require('nats.errors')
+local errors = require('nats.utils.errors')
 
 
 local group =  t.group('enum-errors')
