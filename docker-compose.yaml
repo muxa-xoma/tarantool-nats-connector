@@ -18,7 +18,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: dev
-    container_name: tarantool
+    container_name: tarantool-dev
     profiles:
       - dev
     deploy:
@@ -35,7 +35,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: test
-    container_name: tarantool
+    container_name: tarantool-test
     profiles:
       - test
     deploy:
@@ -58,7 +58,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: test
-    container_name: tarantool
+    container_name: tarantool-coverage
     profiles:
       - coverage
     deploy:
