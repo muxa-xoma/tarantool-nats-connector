@@ -4,7 +4,6 @@ local socket = require('socket')
 local helper = require('tests.helpers.unit')
 
 local TCPTransport = require('nats.transport.tcp')
-local errors = require('nats.utils.errors')
 
 
 local group =  t.group('module-transport-tcp')
