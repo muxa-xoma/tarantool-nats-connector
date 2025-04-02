@@ -39,6 +39,13 @@ group.test_new = function()
     t.assert_type(module.pong, 'function')
 end
 
+group.test_connect = function(cg)
+    ---@language "JSON"
+    local conf = [[{ "param1": "val1", "param2": true }]]
+    local result = cg.module:connect(conf)
+    t.assert_equals('CONNECT ' .. conf .. '\r\n', result)
+end
+
 group.test_publish_without_reply_subject = function(cg)
     local subject = cg.nuid:next()
     local payload = cg.helper:random_string(cg.helper.random_int(10, 50))
