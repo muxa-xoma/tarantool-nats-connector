@@ -27,6 +27,7 @@ build = {
         ["nats.transport"] = "transport/init.lua",
         ["nats.protocol.constants"] = "protocol/constants.lua",
         ["nats.protocol.command"] = "protocol/command.lua",
+        ["nats.protocol.parser"] = "protocol/parser.lua",
         ["nats.protocol"] = "protocol/init.lua",
         ["nats"] = "init.lua"
     }
