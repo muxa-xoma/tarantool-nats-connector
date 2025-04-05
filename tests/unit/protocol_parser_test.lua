@@ -4,7 +4,6 @@ local helper = require('tests.helpers.unit')
 
 
 local parser = require('nats.protocol.parser')
-local nuid = require('nats.utils.nuid')
 
 
 local group =  t.group('module-protocol-parser')
