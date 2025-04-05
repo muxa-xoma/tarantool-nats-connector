@@ -22,6 +22,7 @@ build = {
         ["nats.utils.errors"] = "utils/errors/init.lua",
         ["nats.utils.nuid"] = "utils/nuid/init.lua",
         ["nats.utils.result"] = "utils/result/init.lua",
+        ["nats.utils.server"] = "utils/server/init.lua",
         ["nats.transport.tcp"] = "transport/tcp.lua",
         ["nats.transport"] = "transport/init.lua",
         ["nats.protocol.command"] = "protocol/command.lua",

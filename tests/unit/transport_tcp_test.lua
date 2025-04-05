@@ -14,7 +14,7 @@ group.before_all(
             cg.host = '127.0.0.1'
             cg.port = 3333
             cg.timeout = 1
-            cg.delimiter = '\n'
+            cg.delimiter = '\r\n'
             cg.cache = {}
         end
 )
@@ -90,7 +90,7 @@ group.test_write = function(cg)
     local write = con.data:write(payload .. cg.delimiter)
     t.assert(write.success)
     t.assert_equals(#(payload .. cg.delimiter), write.data)
-    t.assert_equals('Request: ' .. payload .. cg.delimiter, con.data:read(cg.delimiter, 1).data)
+    t.assert_equals('Request: ' .. payload .. cg.delimiter, con.data:read().data)
     t.assert_equals(payload .. cg.delimiter, cg.cache[1])
 end
 
@@ -111,7 +111,7 @@ group.test_read = function(cg)
     t.assert(con.success)
     local write = con.data:write(payload .. cg.delimiter)
     t.assert(write.success)
-    local read = con.data:read(cg.delimiter, 1)
+    local read = con.data:read(512, 1)
     t.assert(read.success)
     t.assert_equals('Request: ' .. payload .. cg.delimiter, read.data)
     t.assert_equals(payload .. cg.delimiter, cg.cache[1])
@@ -124,7 +124,7 @@ group.test_health_check_true = function(cg)
     local write = con.data:write(payload .. cg.delimiter)
     t.assert(write.success)
     t.assert(con.data:health_check())
-    local read = con.data:read(cg.delimiter, 1)
+    local read = con.data:read(512, 1)
     t.assert(read.success)
     t.assert_equals('Request: ' .. payload .. cg.delimiter, read.data)
     t.assert_equals(payload .. cg.delimiter, cg.cache[1])
@@ -138,7 +138,7 @@ group.test_drain = function(cg)
     t.assert(write.success)
     local response = con.data:drain()
     t.assert(response.success)
-    local read = con.data:read(cg.delimiter, 1)
+    local read = con.data:read(512, 1)
     t.assert(read.success)
     t.assert_equals(read.data, '')
 end

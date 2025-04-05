@@ -1,7 +1,7 @@
 local default_type = 'NATS connector'
 
 
----@class NatsError: table
+---@class NatsErrorEnum: table
 ---@alias Error { code: number, message: string, type: string }
 ---@field invalid_connect_params Error
 ---@field mix_connect_params Error

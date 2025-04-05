@@ -8,6 +8,7 @@ local result = require('nats.utils.result')
 ---@field private _timeout number action timeout
 ---@field private _host string IP address or DNS name
 ---@field private _port number socket port
+---@field private _default_msg_len number default number of bytes to read
 ---@field private _has_drain boolean socket is drain
 ---@field private _has_close boolean socket is close
 local M = {}
@@ -17,12 +18,14 @@ M.__index = M
 ---@param host string connection hostname or IP address
 ---@param port number connection port
 ---@param timeout number connection timeout, default 1 second
+---@param msg_len number default number of bytes to read
 ---@return Result instance of class Result where data is TCPTransport
-function M.new(host, port, timeout)
+function M.new(host, port, timeout, msg_len)
     local self = setmetatable({}, M)
     self._timeout = timeout and timeout or 1
     self._host = host
     self._port = port
+    self._default_msg_len = msg_len and msg_len or 32768
     return self:_connect()
 end
 
@@ -58,9 +61,9 @@ end
 ---@param len number number of read bits
 ---@return Result instance of class Result where data is read string
 function M.read(self, len, timeout)
-    len = len and len or '*l'
+    len = len and len or self._default_msg_len
     timeout = timeout and timeout or self._timeout
-    local payload_s = self._socket:read(len, timeout)
+    local payload_s = self._socket:read({ chunk = len, delimiter = '\r\n' }, timeout)
     if not payload_s then
         return result.new(nil, errors.tcp_transport, self._socket:error())
     end
