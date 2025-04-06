@@ -3,7 +3,7 @@ local uri = require('uri')
 
 local version = require('nats.utils.version')
 
----@class NatsServer
+---@class NatsServerInfo
 ---@alias URI { scheme: string, host: string, service: string, ipv4: string|nil }
 ---@field public server_id string The unique identifier of the NATS server
 ---@field public server_name string The name of the NATS server
@@ -34,9 +34,9 @@ local M = {}
 M.__index = M
 
 ---@param info_s string json string with nats server parameters
----@return NatsServer class instance
+---@return NatsServerInfo class instance
 function M.new(info_s)
-    ---@type NatsServer
+    ---@type NatsServerInfo
     local self = setmetatable({}, M)
     for k, v in pairs(json.decode(info_s)) do
         self:_parse_msg_info(k, v)
@@ -45,7 +45,7 @@ function M.new(info_s)
     return self
 end
 
----@param self NatsServer class instance
+---@param self NatsServerInfo class instance
 ---@return void
 function M._check_required_params(self)
     assert(self.server_id ~= nil, 'In the message of type info there must be a parameter server_id')
@@ -59,7 +59,7 @@ function M._check_required_params(self)
     assert(self.proto ~= nil, 'In the message of type info there must be a parameter proto')
 end
 
----@param self NatsServer class instance
+---@param self NatsServerInfo class instance
 ---@param key string nats server parameter name
 ---@param value string|number|boolean|string[] nats server parameter value
 ---@return void

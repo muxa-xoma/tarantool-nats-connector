@@ -2,10 +2,10 @@ local t = require('luatest')
 
 local helper = require('tests.helpers.unit')
 
-local server = require('nats.utils.server')
+local server = require('nats.protocol.server_info')
 
 
-local group =  t.group('utils-module-server')
+local group =  t.group('module-protocol-server_info')
 
 group.before_all(
         function(cg)
