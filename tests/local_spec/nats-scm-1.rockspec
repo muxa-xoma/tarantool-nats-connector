@@ -7,9 +7,9 @@ source = {
 }
 description = {
     summary = "NATS connector for Tarantool",
-    --homepage = "https://github.com/tarantool/expirationd",
-    --license = "BSD2",
-    --maintainer = "Oleg Jukovec <oleg.jukovec@tarantool.org>"
+    homepage = "https://github.com/muxa-xoma/tarantool-nats-connector",
+    license = "Apache-2.0",
+    maintainer = "Mikhael Fomenko <muxa-xoma@mail.ru>"
 }
 dependencies = {
     "lua >= 5.1",
@@ -29,6 +29,7 @@ build = {
         ["nats.protocol.command"] = "protocol/command.lua",
         ["nats.protocol.parser"] = "protocol/parser.lua",
         ["nats.protocol"] = "protocol/init.lua",
+        ["nats.client.server"] = "client/server.lua",
         ["nats"] = "init.lua"
     }
 }

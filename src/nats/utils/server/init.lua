@@ -4,7 +4,7 @@ local uri = require('uri')
 local version = require('nats.utils.version')
 
 ---@class NatsServer
----@alias URL { scheme: string, host: string, service: string }
+---@alias URI { scheme: string, host: string, service: string, ipv4: string|nil }
 ---@field public server_id string The unique identifier of the NATS server
 ---@field public server_name string The name of the NATS server
 ---@field public version Version The version of NATS
@@ -19,8 +19,8 @@ local version = require('nats.utils.version')
 ---@field public tls_required boolean|nil If this is true, then the client must perform the TLS/1.2 handshake.
 ---@field public tls_verify boolean|nil If this is true, the client must provide a valid certificate during the TLS handshake
 ---@field public tls_available boolean|nil If this is true, the client can provide a valid certificate during the TLS handshake
----@field public connect_urls URL[]|nil List of server urls that a client can connect to
----@field public ws_connect_urls URL[]|nil List of server urls that a websocket client can connect to
+---@field public connect_urls URI[]|nil List of server urls that a client can connect to
+---@field public ws_connect_urls URI[]|nil List of server urls that a websocket client can connect to
 ---@field public ldm boolean|nil If the server supports Lame Duck Mode notifications, and the current server has transitioned to lame duck, ldm will be set to true
 ---@field public git_commit string|nil The git hash at which the NATS server was built
 ---@field public jetstream boolean|nil Whether the server supports JetStream
@@ -30,13 +30,13 @@ local version = require('nats.utils.version')
 ---@field public cluster string|nil The name of the cluster
 ---@field public domain string|nil The configured NATS domain of the server
 ---@field public xkey string|nil The public key of a designated XKey (x25519) used for encrypting authorization payloads
-local M = {
-}
+local M = {}
 M.__index = M
 
 ---@param info_s string json string with nats server parameters
 ---@return NatsServer class instance
 function M.new(info_s)
+    ---@type NatsServer
     local self = setmetatable({}, M)
     for k, v in pairs(json.decode(info_s)) do
         self:_parse_msg_info(k, v)
