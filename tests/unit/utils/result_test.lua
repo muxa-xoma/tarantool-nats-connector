@@ -16,7 +16,7 @@ group.before_all(
 )
 
 group.test_new_data = function(cg)
-    local data = cg.helper:random_string(cg.helper.random_int(5, 50))
+    local data = cg.helper:random_string(cg.helper:random_int(5, 50))
     ---@type Result
     local result = cg.module.new(data)
     t.assert(result.success)
@@ -26,7 +26,7 @@ end
 
 group.test_new_err = function(cg)
     local err = {
-        message = cg.helper:random_string(cg.helper.random_int(5, 50)),
+        message = cg.helper:random_string(cg.helper:random_int(5, 50)),
         code = 777,
         type = 'Test type'
     }
@@ -39,11 +39,11 @@ end
 
 group.test_new_err_add_err_text = function(cg)
     local err = {
-        message = cg.helper:random_string(cg.helper.random_int(5, 50)) .. ': ',
+        message = cg.helper:random_string(cg.helper:random_int(5, 50)) .. ': ',
         code = 888,
         type = 'Test type add error text'
     }
-    local add_err_text = cg.helper:random_string(cg.helper.random_int(5, 50))
+    local add_err_text = cg.helper:random_string(cg.helper:random_int(5, 50))
     ---@type Result
     local result = cg.module.new(nil, err, add_err_text)
     t.assert_not(result.success)

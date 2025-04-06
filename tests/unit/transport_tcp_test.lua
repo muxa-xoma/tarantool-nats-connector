@@ -84,7 +84,7 @@ group.test_reconnect_error = function(cg)
 end
 
 group.test_write = function(cg)
-    local payload = cg.helper:random_string(cg.helper.random_int(5, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(5, 50))
     local con = TCPTransport.new(cg.host, cg.port, cg.timeout)
     t.assert(con.success)
     local write = con.data:write(payload .. cg.delimiter)
@@ -95,7 +95,7 @@ group.test_write = function(cg)
 end
 
 group.test_write_err = function(cg)
-    local payload = cg.helper:random_string(cg.helper.random_int(5, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(5, 50))
     local con = TCPTransport.new(cg.host, cg.port, cg.timeout)
     t.assert(con.success)
     con.data:drain()
@@ -106,7 +106,7 @@ group.test_write_err = function(cg)
 end
 
 group.test_read = function(cg)
-    local payload = cg.helper:random_string(cg.helper.random_int(5, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(5, 50))
     local con = TCPTransport.new(cg.host, cg.port, cg.timeout)
     t.assert(con.success)
     local write = con.data:write(payload .. cg.delimiter)
@@ -118,7 +118,7 @@ group.test_read = function(cg)
 end
 
 group.test_health_check_true = function(cg)
-    local payload = cg.helper:random_string(cg.helper.random_int(5, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(5, 50))
     local con = TCPTransport.new(cg.host, cg.port, cg.timeout)
     t.assert(con.success)
     local write = con.data:write(payload .. cg.delimiter)
@@ -131,7 +131,7 @@ group.test_health_check_true = function(cg)
 end
 
 group.test_drain = function(cg)
-    local payload = cg.helper:random_string(cg.helper.random_int(5, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(5, 50))
     local con = TCPTransport.new(cg.host, cg.port, cg.timeout)
     t.assert(con.success)
     local write = con.data:write(payload .. cg.delimiter)
@@ -144,7 +144,7 @@ group.test_drain = function(cg)
 end
 
 group.test_drain_false_is_drain = function(cg)
-    local payload = cg.helper:random_string(cg.helper.random_int(5, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(5, 50))
     local con = TCPTransport.new(cg.host, cg.port, cg.timeout)
     t.assert(con.success)
     local write = con.data:write(payload .. cg.delimiter)
@@ -157,7 +157,7 @@ group.test_drain_false_is_drain = function(cg)
 end
 
 group.test_drain_false_is_close = function(cg)
-    local payload = cg.helper:random_string(cg.helper.random_int(5, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(5, 50))
     local con = TCPTransport.new(cg.host, cg.port, cg.timeout)
     t.assert(con.success)
     local write = con.data:write(payload .. cg.delimiter)
@@ -170,7 +170,7 @@ group.test_drain_false_is_close = function(cg)
 end
 
 group.test_close = function(cg)
-    local payload = cg.helper:random_string(cg.helper.random_int(5, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(5, 50))
     local con = TCPTransport.new(cg.host, cg.port, cg.timeout)
     t.assert(con.success)
     local write = con.data:write(payload .. cg.delimiter)
@@ -181,7 +181,7 @@ group.test_close = function(cg)
 end
 
 group.test_close_drain = function(cg)
-    local payload = cg.helper:random_string(cg.helper.random_int(5, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(5, 50))
     local con = TCPTransport.new(cg.host, cg.port, cg.timeout)
     t.assert(con.success)
     local write = con.data:write(payload .. cg.delimiter)
@@ -194,7 +194,7 @@ group.test_close_drain = function(cg)
 end
 
 group.test_close_false = function(cg)
-    local payload = cg.helper:random_string(cg.helper.random_int(5, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(5, 50))
     local con = TCPTransport.new(cg.host, cg.port, cg.timeout)
     t.assert(con.success)
     local write = con.data:write(payload .. cg.delimiter)

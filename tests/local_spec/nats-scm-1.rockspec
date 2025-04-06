@@ -25,11 +25,13 @@ build = {
         ["nats.transport.tcp"] = "transport/tcp.lua",
         ["nats.transport"] = "transport/init.lua",
         ["nats.protocol.server_info"] = "protocol/server_info.lua",
+        ["nats.protocol.connection_parameters"] = "protocol/connection_parameters.lua",
         ["nats.protocol.constants"] = "protocol/constants.lua",
         ["nats.protocol.command"] = "protocol/command.lua",
         ["nats.protocol.parser"] = "protocol/parser.lua",
         ["nats.protocol"] = "protocol/init.lua",
         ["nats.client.server"] = "client/server.lua",
+        ["nats.version"] = "version.lua",
         ["nats"] = "init.lua"
     }
 }

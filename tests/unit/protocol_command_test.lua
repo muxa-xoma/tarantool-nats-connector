@@ -39,14 +39,14 @@ end
 
 group.test_publish_without_reply_subject = function(cg)
     local subject = cg.nuid:next()
-    local payload = cg.helper:random_string(cg.helper.random_int(10, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(10, 50))
     local result = cg.module:publish(subject, payload)
     t.assert_equals('PUB ' .. subject .. ' ' .. #payload .. '\r\n' .. payload .. '\r\n', result)
 end
 
 group.test_publish_with_reply_subject = function(cg)
     local subject = cg.nuid:next()
-    local payload = cg.helper:random_string(cg.helper.random_int(10, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(10, 50))
     local reply_subject = cg.nuid:next()
     local result = cg.module:publish(subject, payload, reply_subject)
     t.assert_equals('PUB ' .. subject .. ' ' .. reply_subject .. ' ' .. #payload .. '\r\n' .. payload .. '\r\n', result)
@@ -54,7 +54,7 @@ end
 
 group.test_headers_publish_without_reply_subject = function(cg)
     local subject = cg.nuid:next()
-    local payload = cg.helper:random_string(cg.helper.random_int(10, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(10, 50))
     local headers = {
         test = 'test',
         pretest = '15'
@@ -67,7 +67,7 @@ end
 
 group.test_headers_publish_with_reply_subject = function(cg)
     local subject = cg.nuid:next()
-    local payload = cg.helper:random_string(cg.helper.random_int(10, 50))
+    local payload = cg.helper:random_string(cg.helper:random_int(10, 50))
     local reply_subject = cg.nuid:next()
     local headers = {
         string = 'value',
@@ -82,28 +82,28 @@ end
 
 group.test_subscribe_without_group = function(cg)
     local subject = cg.nuid:next()
-    local sid = cg.helper.random_int(1, 50)
+    local sid = cg.helper:random_int(1, 50)
     local result = cg.module:subscribe(subject, sid)
     t.assert_equals('SUB ' .. subject .. ' ' .. sid .. '\r\n' , result)
 end
 
 group.test_subscribe_with_group = function(cg)
     local subject = cg.nuid:next()
-    local sid = cg.helper.random_int(1, 50)
+    local sid = cg.helper:random_int(1, 50)
     local grp = cg.nuid:next()
     local result = cg.module:subscribe(subject, sid, grp)
     t.assert_equals('SUB ' .. subject .. ' ' .. grp .. ' ' .. sid .. '\r\n' , result)
 end
 
 group.test_unsubscribe_without_max_msg = function(cg)
-    local sid = cg.helper.random_int(1, 50)
+    local sid = cg.helper:random_int(1, 50)
     local result = cg.module:unsubscribe(sid)
     t.assert_equals('UNSUB ' .. sid .. '\r\n' , result)
 end
 
 group.test_unsubscribe_with_max_msg = function(cg)
-    local sid = cg.helper.random_int(1, 50)
-    local max_msg = cg.helper.random_int(1, 50)
+    local sid = cg.helper:random_int(1, 50)
+    local max_msg = cg.helper:random_int(1, 50)
     local result = cg.module:unsubscribe(sid, max_msg)
     t.assert_equals('UNSUB ' .. sid .. ' ' .. max_msg .. '\r\n' , result)
 end
