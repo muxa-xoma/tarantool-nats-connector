@@ -1,6 +1,14 @@
 local nats_protocol_const = require('nats.protocol.constants')
 
 ---@class NatsClientCommand the class is a constructor of client commands
+---@field public new function returns an instance of the class
+---@field public connect function returns connection string
+---@field public publish function returns publish string
+---@field public headers_publish function returns publish string with headers
+---@field public subscribe function returns subscribe string
+---@field public unsubscribe function returns unsubscribe string
+---@field public ping function returns ping string
+---@field public pong function returns pong string
 local M = {}
 M.__index = M
 
