@@ -24,8 +24,12 @@ end
 group.test_values = function()
     for _, v in pairs(errors) do
         t.assert_gt(v.code, 0)
-        t.assert_le(v.code, 50)
-        t.assert_equals(v.type, 'NATS connector')
+        t.assert_le(v.code, 80)
+        if v.code <= 50 then
+            t.assert_equals(v.type, 'NATS connector')
+        else
+            t.assert_equals(v.type, 'NATS server')
+        end
     end
 end
 

@@ -23,6 +23,9 @@ local errors = require('nats.utils.errors')
 ---@field public no_responders boolean Enable quick replies for cases where a request is sent to a topic with no responders.
 ---@field public headers boolean Whether the client supports headers.
 ---@field public nkey string|void The public NKey to authenticate the client. This will be used to verify the signature (sig) against the nonce provided in the INFO message.
+---@field public new function returns an instance of the class
+---@field public tostring function returns as json string
+---@field public set_server_info_params function sets server parameters
 local M = {}
 M.__index = M
 

@@ -252,3 +252,21 @@ group.test_parse_msg_with_not_full_control_line = function()
     t.assert_equals(module._state, 1)
     t.assert_equals(module._buffer, '')
 end
+
+group.test_error_parse = function()
+    local err_text_t = {
+        'Unknown Protocol Operation', 'Attempted To Connect To Route Port', 'Authorization Violation',
+        'Authorization Timeout', 'Invalid Client Protocol', 'Maximum Control Line Exceeded', 'Parser Error',
+        'Secure Connection - TLS Required', 'Stale Connection', 'Maximum Connections Exceeded', 'Slow Consumer',
+        'Maximum Payload Violation', 'Invalid Subject', 'Permissions Violation for Subscription to test.topic',
+        'Permissions Violation for Publish to subjects.test.1', 'Server unexpected error'
+    }
+    local module = parser.new()
+    for _, v in ipairs(err_text_t) do
+        local err = module.error_parse(v)
+        t.assert_type(err, 'table')
+        t.assert_equals(err.type, 'NATS server')
+        t.assert_gt(err.code, 50)
+        t.assert_le(err.code, 80)
+    end
+end

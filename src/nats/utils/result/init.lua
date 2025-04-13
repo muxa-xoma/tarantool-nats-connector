@@ -2,6 +2,7 @@
 ---@field public success boolean
 ---@field public data any data returned by the function
 ---@field public error Error|nil the error that the function returned
+---@field public new function returns an instance of the class
 local M = {}
 M.__index = M
 

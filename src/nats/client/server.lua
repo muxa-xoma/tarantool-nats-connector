@@ -10,6 +10,13 @@ local server_info = require('nats.protocol.server_info')
 ---@field public discovered boolean is the server found
 ---@field public info NatsServerInfo|void information returned by the server
 ---@field public tls_name string|void server name for tls
+---@field public last_attempt number|void time of last connection attempt
+---@field public new function returns an instance of the class
+---@field public set_server_info function sets server parameters
+---@field public set_tls_name function sets tls name
+---@field public need_connecting function marks as needing connection
+---@field public server_discovered function marks as detected
+---@field public server_version function return server version string
 local M = {}
 M.__index = M
 

@@ -11,6 +11,14 @@ local result = require('nats.utils.result')
 ---@field private _default_msg_len number default number of bytes to read
 ---@field private _has_drain boolean socket is drain
 ---@field private _has_close boolean socket is close
+---@field public new function returns an instance of the class
+---@field public connect function connects to socket
+---@field public reconnect function reconnects to socket
+---@field public write function writes data to the socket
+---@field public read function reads data from socket
+---@field public drain function locks socket for writing
+---@field public close function closes the socket
+---@field public health_check function checks socket status
 local M = {}
 M.__index = M
 
@@ -19,31 +27,31 @@ M.__index = M
 ---@param port number connection port
 ---@param timeout number connection timeout, default 1 second
 ---@param msg_len number default number of bytes to read
----@return Result instance of class Result where data is TCPTransport
+---@return TCPTransport instance of class TCPTransport
 function M.new(host, port, timeout, msg_len)
     local self = setmetatable({}, M)
     self._timeout = timeout and timeout or 1
     self._host = host
     self._port = port
     self._default_msg_len = msg_len and msg_len or 32768
-    return self:_connect()
+    return self
 end
 
 ---@param self TCPTransport instance of class TCPTransport
 ---@return Result instance of class Result where data is TCPTransport
-function M._connect(self)
+function M.connect(self)
     local con, err = socket.tcp_connect(self._host, self._port, self._timeout)
     if err ~= nil then
         return result.new(nil, errors.tcp_transport, err)
     end
     self._socket = con
-    return result.new(self)
+    return result.new(true)
 end
 
 ---@param self TCPTransport instance of class TCPTransport
 ---@return Result instance of class Result where data is TCPTransport
 function M.reconnect(self)
-    return self:_connect()
+    return self:connect()
 end
 
 ---@param self TCPTransport instance of class TCPTransport
@@ -79,7 +87,7 @@ function M.drain(self)
     if self._has_close then
         return result.new(nil, errors.tcp_transport, 'socket is close')
     end
-    local has_shutdown = self._socket:shutdown(socket.SHUT_RDWR)
+    local has_shutdown = self._socket:shutdown(socket.SHUT_WR)
     if not has_shutdown then
         return result.new(nil, errors.tcp_transport, self._socket:error())
     end

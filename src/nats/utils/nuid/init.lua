@@ -18,10 +18,14 @@ constants.BASE = #constants.DIGITS
 constants.INC = constants.MAX_INC - constants.MIN_INC
 constants.TOTAL_LENGTH = constants.PREFIX_LENGTH + constants.SEQ_LENGTH
 
----@class Nuid
+---@class Nuid class generating random strings
 ---@field private _seq number random sequence
 ---@field private _inc number random increment
 ---@field private _prefix string random prefix
+---@field private _randomize_prefix function generates random prefix
+---@field private _reset_sequential function resets sequences
+---@field public new function returns an instance of the class
+---@field public next function returns random string
 local M = {}
 M.__index = M
 

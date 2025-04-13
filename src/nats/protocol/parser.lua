@@ -20,6 +20,12 @@ local states = {
 ---@field private _buffer string message buffer being processed
 ---@field private _state NatsParserStatesEnum
 ---@field private _msg table < string, string|number >
+---@field private _reset function resets class
+---@field private _parse_control_msg function recognizes the control line of the message
+---@field private _parse_msg_headers function recognizes message headers
+---@field public new function returns an instance of the class
+---@field public parse function returns the recognized message
+---@field public error_parse function return recognized error
 local M = {}
 M.__index = M
 
@@ -147,6 +153,46 @@ function M.parse(self, data)
     else
         return result.new(nil, errors.unexpected_eof)
     end
+end
+
+---@param err_string string the error text that the server returned
+---@return Error recognized error
+function M.error_parse(err_string)
+    local err
+    if err_string == 'Unknown Protocol Operation' then
+        err = errors.unk_protocol_err
+    elseif err_string == 'Attempted To Connect To Route Port' then
+        err = errors.con_route_port
+    elseif err_string == 'Authorization Violation' then
+        err = errors.authorization_violation
+    elseif err_string == 'Authorization Timeout' then
+        err = errors.authorization_timeout
+    elseif err_string == 'Invalid Client Protocol' then
+        err = errors.invalid_client_protocol
+    elseif err_string == 'Maximum Control Line Exceeded' then
+        err = errors.max_control_line
+    elseif err_string == 'Parser Error' then
+        err = errors.parser_err
+    elseif err_string == 'Secure Connection - TLS Required' then
+        err = errors.tls_required
+    elseif err_string == 'Stale Connection' then
+        err = errors.stale_connection_serv
+    elseif err_string == 'Maximum Connections Exceeded' then
+        err = errors.max_connections
+    elseif err_string == 'Slow Consumer' then
+        err = errors.slow_consumer_serv
+    elseif err_string == 'Maximum Payload Violation' then
+        err = errors.max_payload_serv
+    elseif err_string == 'Invalid Subject' then
+        err = errors.invalid_subject
+    elseif string.startswith(err_string, 'Permissions Violation for Subscription to') then
+        err = errors.permission_read_subject
+    elseif string.startswith(err_string, 'Permissions Violation for Publish to') then
+        err = errors.permission_write_subject
+    else
+        err = errors.unexpected_serv
+    end
+    return err
 end
 
 
