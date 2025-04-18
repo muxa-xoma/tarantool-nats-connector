@@ -34,6 +34,7 @@ local default_serv_type = 'NATS server'
 ---@field msg_already_ackd Error
 ---@field tcp_transport Error
 ---@field connection_not_info_msg Error
+---@field unsubscribe_queue_not_empty Error
 ---@field unexpected Error
 ---@field unk_protocol_err Error
 ---@field con_route_port Error
@@ -87,6 +88,8 @@ local errors = {
     tcp_transport = { message = 'TCP transport error: ', type = default_con_type, code = 29 },
     connection_not_info_msg = { message = 'Empty response from server when expecting INFO message',
                                 type    = default_con_type, code = 30 },
+    unsubscribe_queue_not_empty = { message = 'Pending queue not empty',
+                                    type    = default_con_type, code = 31 },
     unexpected = { message = 'Unexpected error', type = default_con_type, code = 50 },
     unk_protocol_err = { message = 'Unknown protocol error', type = default_serv_type, code = 51 },
     con_route_port = { message = 'Client attempted to connect to a route port instead of the client port',

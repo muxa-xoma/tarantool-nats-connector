@@ -32,6 +32,7 @@ build = {
         ["nats.protocol"] = "protocol/init.lua",
         ["nats.client.server"] = "client/server.lua",
         ["nats.client.message"] = "client/message.lua",
+        ["nats.client.subscription"] = "client/subscription.lua",
         ["nats.version"] = "version.lua",
         ["nats"] = "init.lua"
     }
