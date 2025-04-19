@@ -36,7 +36,7 @@ M.__index = M
 ---@param client NatsClient client connected to NATS server
 ---@param id number subscription ID
 ---@param subject string subscription subject
----@param queue string subscription queue
+---@param queue string|nil subscription queue
 ---@param cb function|nil callback function
 ---@param max_msgs number maximum number of messages expected from a subscription
 ---@param pending_msgs_limit number maximum number of messages in the handler queue

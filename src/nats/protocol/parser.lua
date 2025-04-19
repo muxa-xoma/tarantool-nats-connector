@@ -54,26 +54,21 @@ function M._parse_control_msg(self, control_line)
     for slice in control_line:gmatch('[^%s]+') do
         table.insert(slices, slice)
     end
-    if slices[1] == const.ping then
-        self._msg.type =  const.ping
+    self._msg.type = slices[1]
+    if self._msg.type == const.ping then
         self._state = states.need_return
-    elseif slices[1] == const.pong then
-        self._msg.type =  const.pong
+    elseif self._msg.type == const.pong then
         self._state = states.need_return
-    elseif slices[1] == const.ok then
-        self._msg.type =  const.ok
+    elseif self._msg.type == const.ok then
         self._state = states.need_return
-    elseif slices[1] == const.info then
-        self._msg.type =  const.info
+    elseif self._msg.type == const.info then
         self._msg.payload = slices[2]
         self._state = states.need_return
-    elseif slices[1] == const.err then
-        self._msg.type =  const.err
+    elseif self._msg.type == const.err then
         table.remove(slices, 1)
         self._msg.payload = table.concat(slices, ' ')
         self._state = states.need_return
-    elseif slices[1] == const.msg then
-        self._msg.type =  const.msg
+    elseif self._msg.type == const.msg then
         self._msg.subject = slices[2]
         self._msg.sid = tonumber(slices[3])
         if #slices == 4 then
@@ -83,8 +78,7 @@ function M._parse_control_msg(self, control_line)
             self._msg.payload_len = tonumber(slices[5])
         end
         self._state = states.awaiting_msg_payload
-    elseif slices[1] == const.hmsg then
-        self._msg.type =  const.hmsg
+    elseif self._msg.type == const.hmsg then
         self._msg.subject = slices[2]
         self._msg.sid = tonumber(slices[3])
         if #slices == 5 then
