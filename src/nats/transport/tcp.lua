@@ -70,7 +70,6 @@ end
 ---@return Result instance of class Result where data is read string
 function M.read(self, len, timeout)
     len = len and len or self._default_msg_len
-    timeout = timeout and timeout or self._timeout
     local payload_s = self._socket:read({ chunk = len, delimiter = '\r\n' }, timeout)
     if not payload_s then
         return result.new(nil, errors.tcp_transport, self._socket:error())

@@ -33,6 +33,7 @@ build = {
         ["nats.client.server"] = "client/server.lua",
         ["nats.client.message"] = "client/message.lua",
         ["nats.client.subscription"] = "client/subscription.lua",
+        ["nats.client"] = "client/init.lua",
         ["nats.version"] = "version.lua",
         ["nats"] = "init.lua"
     }

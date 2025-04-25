@@ -56,8 +56,7 @@ function M.respond(self, payload)
     if self._client == nil  then
         error('client not set')
     end
-    -- TODO: fixed when write publish function
-    self._client:publish(self.reply, payload, self.headers)
+    self._client:publish(self.reply, payload, nil,  self.headers)
 end
 
 
