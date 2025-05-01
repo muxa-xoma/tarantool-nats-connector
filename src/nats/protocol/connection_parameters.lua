@@ -1,9 +1,9 @@
 local json =require('json')
 
 local versions = require('nats.version')
-local version = require('nats.utils.version')
-local result = require('nats.utils.result')
-local errors = require('nats.utils.errors')
+local Version = require('nats.utils.version')
+local Result = require('nats.utils.result')
+local NatsErrorEnum = require('nats.utils.errors')
 
 
 ---@class NatsConnectionParameters
@@ -26,8 +26,8 @@ local errors = require('nats.utils.errors')
 ---@field public new function returns an instance of the class
 ---@field public tostring function returns as json string
 ---@field public set_server_info_params function sets server parameters
-local M = {}
-M.__index = M
+local NatsConnectionParameters = {}
+NatsConnectionParameters.__index = NatsConnectionParameters
 
 ---@param name string|void Client name.
 ---@param user string|void Connection username.
@@ -41,14 +41,14 @@ M.__index = M
 ---@param pedantic boolean|void Turns on additional strict format checking, e.g. for properly formed subjects.
 ---@param tls_required boolean|void Indicates whether the client requires an SSL connection.
 ---@return NatsConnectionParameters instance class
-function M.new(name, user, password, auth_token, jwt, nkey, echo, no_responders, verbose, pedantic, tls_required)
+function NatsConnectionParameters.new(name, user, password, auth_token, jwt, nkey, echo, no_responders, verbose, pedantic, tls_required)
     ---@type NatsConnectionParameters
-    local self = setmetatable({}, M)
+    local self = setmetatable({}, NatsConnectionParameters)
     self.verbose = verbose or false
     self.pedantic = pedantic or false
     self.tls_required = tls_required or false
-    self.lang = version.new(versions.tarantool)
-    self.version = version.new(versions.module)
+    self.lang = Version.new(versions.tarantool)
+    self.version = Version.new(versions.module)
     if echo ~= nil then
         self.echo = echo
     else
@@ -71,7 +71,7 @@ end
 
 ---@param self NatsConnectionParameters instance class
 ---@return Result where data json string for connect
-function M.tostring(self)
+function NatsConnectionParameters.tostring(self)
     local connection_t = {
         verbose = self.verbose,
         pedantic = self.pedantic,
@@ -104,23 +104,23 @@ function M.tostring(self)
     if self.nkey ~= nil then
         connection_t.nkey = self.nkey
     end
-    return result.new(json.encode(connection_t))
+    return Result.new(json.encode(connection_t))
 end
 
 ---@param self NatsConnectionParameters instance class
 ---@param params NatsServerInfo instance class
 ---@return Result where data json string for connect
-function M.set_server_info_params(self, params)
+function NatsConnectionParameters.set_server_info_params(self, params)
     self.protocol = params.proto
     if self.protocol ~= 1 and not self.echo then
-        return result.new(nil, errors.invalid_connect_params, ': server does not support disabling echo parameter')
+        return Result.new(nil, NatsErrorEnum.invalid_connect_params, ': server does not support disabling echo parameter')
     end
     self.sig = params.nonce or nil
     if params.auth_required and ((not self.user or not self.pass) and not self.auth_token) then
-        return result.new(nil, errors.invalid_connect_params, ': server only supports authorized connections')
+        return Result.new(nil, NatsErrorEnum.invalid_connect_params, ': server only supports authorized connections')
     end
     return self:tostring()
 end
 
 
-return M
+return NatsConnectionParameters

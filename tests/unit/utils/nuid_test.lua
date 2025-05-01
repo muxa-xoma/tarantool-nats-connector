@@ -2,7 +2,7 @@ local t = require('luatest')
 
 local helper = require('tests.helpers.unit')
 
-local nuid = require('nats.utils.nuid')
+local Nuid = require('nats.utils.nuid')
 
 
 local group =  t.group('utils-module-nuid')
@@ -15,7 +15,7 @@ group.before_all(
 
 group.before_each(
         function(cg)
-            cg.module = nuid.new()
+            cg.module = Nuid.new()
         end
 )
 

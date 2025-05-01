@@ -1,6 +1,6 @@
 local uri = require('uri')
 
-local server_info = require('nats.protocol.server_info')
+local NatsServerInfo = require('nats.protocol.server_info')
 
 
 ---@class NatsServer class for client work with nats servers
@@ -17,14 +17,14 @@ local server_info = require('nats.protocol.server_info')
 ---@field public need_connecting function marks as needing connection
 ---@field public server_discovered function marks as detected
 ---@field public server_version function return server version string
-local M = {}
-M.__index = M
+local NatsServer = {}
+NatsServer.__index = NatsServer
 
 ---@param url_string string url for connecting to nats server
 ---@return NatsServer class instance
-function M.new(url_string)
+function NatsServer.new(url_string)
     ---@type NatsServer
-    local self = setmetatable({}, M)
+    local self = setmetatable({}, NatsServer)
     ---@type URI
     self.uri = uri.parse(url_string)
     self.reconnects = 0
@@ -36,32 +36,32 @@ end
 ---@param self NatsServer class instance
 ---@param server_info_string string json string with server information
 ---@return void
-function M.set_server_info(self, server_info_string)
-    self.info = server_info.new(server_info_string)
+function NatsServer.set_server_info(self, server_info_string)
+    self.info = NatsServerInfo.new(server_info_string)
 end
 
 ---@param self NatsServer class instance
 ---@param tls_name string server tls name
 ---@return void
-function M.set_tls_name(self, tls_name)
+function NatsServer.set_tls_name(self, tls_name)
     self.tls_name = tls_name
 end
 
 ---@param self NatsServer class instance
 ---@return void
-function M.need_connecting(self)
+function NatsServer.need_connecting(self)
     self.did_connect = true
 end
 
 ---@param self NatsServer class instance
 ---@return void
-function M.server_discovered(self)
+function NatsServer.server_discovered(self)
     self.discovered = true
 end
 
 ---@param self NatsServer class instance
 ---@return string
-function M.server_version(self)
+function NatsServer.server_version(self)
     if self.info then
         return string.format('NATS server %s on golang go%s', self.info.version:tostring(), self.info.go:tostring())
     end
@@ -69,4 +69,4 @@ function M.server_version(self)
 end
 
 
-return M
+return NatsServer

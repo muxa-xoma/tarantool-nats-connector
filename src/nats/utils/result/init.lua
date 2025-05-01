@@ -3,14 +3,14 @@
 ---@field public data any data returned by the function
 ---@field public error Error|nil the error that the function returned
 ---@field public new function returns an instance of the class
-local M = {}
-M.__index = M
+local Result = {}
+Result.__index = Result
 
 ---@param data any data returned by the function
 ---@param err Error|nil the error that the function returned
 ---@param add_err_text string|nil text added to the error text
-function M.new(data, err, add_err_text)
-    local self = setmetatable({}, M)
+function Result.new(data, err, add_err_text)
+    local self = setmetatable({}, Result)
     if data then
         self.success = true
         self.data = data
@@ -25,4 +25,4 @@ function M.new(data, err, add_err_text)
     return self
 end
 
-return M
+return Result

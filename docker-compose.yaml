@@ -14,6 +14,8 @@ services:
           memory: 256M
     command:
       - -DVV
+      - -client_advertise
+      - nats:4222
 
   tarantool-dev:
     build:
@@ -51,7 +53,8 @@ services:
     environment:
       TT_CONFIG:
       TT_INSTANCE_NAME:
-    command: [".rocks/bin/luatest", "./tests", "-v", "-c", "-o", "junit", "-n", "/results/report"]
+#    command: [".rocks/bin/luatest", "./tests", "-v", "-c", "-o", "junit", "-n", "/results/report"]
+    command: [".rocks/bin/luatest", "./tests", "-o", "junit", "-n", "/results/report"]
     volumes:
       - ./tests/results:/results
 

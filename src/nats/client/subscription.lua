@@ -1,6 +1,6 @@
 local fiber = require('fiber')
 
-local errors = require('nats.utils.errors')
+local NatsErrorEnum = require('nats.utils.errors')
 
 
 ---@class Subscription class representing an abstraction of a subscription to a subject in NATS
@@ -30,8 +30,8 @@ local errors = require('nats.utils.errors')
 ---@field public unsubscribe function unsubscribes from subscription
 ---@field private _stop_processing function ends subscription
 ---@field private _wait_for_msgs function automatic message processing function
-local M = {}
-M.__index = M
+local Subscription = {}
+Subscription.__index = Subscription
 
 ---@param client NatsClient client connected to NATS server
 ---@param id number subscription ID
@@ -41,9 +41,9 @@ M.__index = M
 ---@param max_msgs number maximum number of messages expected from a subscription
 ---@param pending_msgs_limit number maximum number of messages in the handler queue
 ---@param pending_bytes_limit number maximum number of bytes in the handler queue
-function M.new(client, id, subject, queue, cb, max_msgs, pending_msgs_limit, pending_bytes_limit)
+function Subscription.new(client, id, subject, queue, cb, max_msgs, pending_msgs_limit, pending_bytes_limit)
     ---@type Subscription
-    local self = setmetatable({}, M)
+    local self = setmetatable({}, Subscription)
     self._client = client
     self._id = id or 0
     self._subject = subject or ''
@@ -61,19 +61,19 @@ end
 
 ---@param self Subscription instance class
 ---@return string subscription subject
-function M.subject(self)
+function Subscription.subject(self)
     return self._subject
 end
 
 ---@param self Subscription instance class
 ---@return string subscription queue
-function M.queue(self)
+function Subscription.queue(self)
     return self._queue
 end
 
 ---@param self Subscription instance class
 ---@return function
-function M.messages(self)
+function Subscription.messages(self)
     if self._message_iterator == nil then
         error('cannot iterate over messages with a non iteration subscription type')
     end
@@ -82,28 +82,28 @@ end
 
 ---@param self Subscription instance class
 ---@return number number of messages awaiting processing
-function M.pending_msgs(self)
+function Subscription.pending_msgs(self)
     return self._pending_queue:count()
 end
 
 ---@param self Subscription instance class
 ---@return number number of bytes awaiting processing
-function M.pending_bytes(self)
+function Subscription.pending_bytes(self)
     return self._pending_size
 end
 
 ---@param self Subscription instance class
 ---@return number number of delivered messages to this subscription so far
-function M.delivered(self)
+function Subscription.delivered(self)
     return self._received
 end
 
 ---@param self Subscription instance class
 ---@param timeout number|nil time in seconds to wait for next message before timing out
 ---@return Message first message in queue
-function M.next_msg(self, timeout)
+function Subscription.next_msg(self, timeout)
     if self._client:is_closed() then
-        error(errors.connection_closed)
+        error(NatsErrorEnum.connection_closed)
     end
     if self._cb ~= nil then
         error('nats: next_msg cannot be used in async subscriptions')
@@ -111,9 +111,9 @@ function M.next_msg(self, timeout)
     timeout = timeout or 1
     local msg = self._pending_queue:get(timeout)
     if msg == nil then
-        local err = errors.timeout
+        local err = NatsErrorEnum.timeout
         if self._client:is_closed() then
-            err = errors.connection_closed
+            err = NatsErrorEnum.connection_closed
         end
         error(err)
     else
@@ -124,7 +124,7 @@ end
 
 ---@param self Subscription instance class
 ---@return void
-function M._start(self)
+function Subscription._start(self)
     if self._cb ~= nil then
         if type(self._cb) ~= 'function' then
             error('nats: must use function for subscriptions')
@@ -144,22 +144,22 @@ end
 
 ---@param self Subscription instance class
 ---@return void
-function M.drain(self)
+function Subscription.drain(self)
     if self._client:is_closed() then
-        error(errors.connection_closed)
+        error(NatsErrorEnum.connection_closed)
     end
     if self._client:is_draining() then
-        error(errors.connection_draining)
+        error(NatsErrorEnum.connection_draining)
     end
     if self._closed then
-        error(errors.bad_subscription)
+        error(NatsErrorEnum.bad_subscription)
     end
     self:_drain()
 end
 
 ---@param self Subscription instance class
 ---@return void
-function M._drain(self)
+function Subscription._drain(self)
     self._client:_send_unsubscribe(self._id)
     self._client:flush()
     if self._cb ~= nil then
@@ -168,7 +168,7 @@ function M._drain(self)
         end
     else
         if self:pending_msgs() > 0 then
-            self._client._cb.error_cb(errors.unsubscribe_queue_not_empty)
+            self._client._cb.error_cb(NatsErrorEnum.unsubscribe_queue_not_empty)
         end
     end
     self:_stop_processing()
@@ -179,16 +179,16 @@ end
 ---@param self Subscription instance class
 ---@param limit number number of messages expected from subscription
 ---@return void
-function M.unsubscribe(self, limit)
+function Subscription.unsubscribe(self, limit)
     limit = limit or 0
     if self._client:is_closed() then
-        error(errors.connection_closed)
+        error(NatsErrorEnum.connection_closed)
     end
     if self._client:is_draining() then
-        error(errors.connection_draining)
+        error(NatsErrorEnum.connection_draining)
     end
     if self._closed then
-        error(errors.bad_subscription)
+        error(NatsErrorEnum.bad_subscription)
     end
     self._max_msgs = limit
     if limit == 0 or (self._received >= limit and self._pending_queue:is_empty()) then
@@ -203,7 +203,7 @@ end
 
 ---@param self Subscription instance class
 ---@return void
-function M._stop_processing(self)
+function Subscription._stop_processing(self)
     if self._wait_for_msgs_task and self._wait_for_msgs_task:status() ~= 'dead' then
         self._wait_for_msgs_task:cancel()
     end
@@ -217,7 +217,7 @@ end
 
 ---@param self Subscription instance class
 ---@return void
-function M._wait_for_msgs(self)
+function Subscription._wait_for_msgs(self)
     assert(self._cb, '_wait_for_msgs can be called only from _start')
     while true do
         local msg = self._pending_queue:get()
@@ -233,4 +233,4 @@ function M._wait_for_msgs(self)
 end
 
 
-return M
+return Subscription

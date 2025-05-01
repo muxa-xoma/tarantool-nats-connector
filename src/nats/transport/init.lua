@@ -1,4 +1,4 @@
 
 return {
-    tcp = require('nats.transport.tcp')
+    TCPTransport = require('nats.transport.tcp')
 }

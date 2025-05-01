@@ -1,3 +1,3 @@
 return {
-    client = require('nats.client')
+    NatsClient = require('nats.client')
 }

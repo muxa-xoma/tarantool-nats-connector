@@ -3,7 +3,7 @@ local t = require('luatest')
 local helper = require('tests.helpers.unit')
 
 
-local parser = require('nats.protocol.parser')
+local NatsParser = require('nats.protocol.parser')
 
 
 local group =  t.group('module-protocol-parser')
@@ -16,7 +16,7 @@ group.before_all(
 
 
 group.test_new = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     t.assert_type(module, 'table')
     t.assert_equals(module._buffer, '')
     t.assert_equals(module._state, 1)
@@ -29,7 +29,7 @@ group.test_new = function()
 end
 
 group.test_parse_control_msg_ping = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'PING'
     module:_parse_control_msg(msg)
     t.assert_equals(module._state, 4)
@@ -37,7 +37,7 @@ group.test_parse_control_msg_ping = function()
 end
 
 group.test_parse_control_msg_pong = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'PONG'
     module:_parse_control_msg(msg)
     t.assert_equals(module._state, 4)
@@ -45,7 +45,7 @@ group.test_parse_control_msg_pong = function()
 end
 
 group.test_parse_control_msg_ok = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = '+OK'
     module:_parse_control_msg(msg)
     t.assert_equals(module._state, 4)
@@ -53,7 +53,7 @@ group.test_parse_control_msg_ok = function()
 end
 
 group.test_parse_control_msg_err = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = "-ERR 'Unknown Protocol Operation'"
     module:_parse_control_msg(msg)
     t.assert_equals(module._state, 4)
@@ -62,7 +62,7 @@ group.test_parse_control_msg_err = function()
 end
 
 group.test_parse_control_msg_info = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'INFO {"server_id":"Zk0GQ3JBSrg3oyxCRRlE09","version":"1.2.0","proto":1,"go":"go1.10.3","host":"0.0.0.0","port":4222,"max_payload":1048576,"client_id":2392}'
     module:_parse_control_msg(msg)
     t.assert_equals(module._state, 4)
@@ -71,7 +71,7 @@ group.test_parse_control_msg_info = function()
 end
 
 group.test_parse_control_msg_msg_without_reply_subject = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'MSG FOO.BAR 9 11'
     module:_parse_control_msg(msg)
     t.assert_equals(module._state, 3)
@@ -82,7 +82,7 @@ group.test_parse_control_msg_msg_without_reply_subject = function()
 end
 
 group.test_parse_control_msg_msg_with_reply_subject = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'MSG FOO.BAR 9 GREETING.34 11'
     module:_parse_control_msg(msg)
     t.assert_equals(module._state, 3)
@@ -94,7 +94,7 @@ group.test_parse_control_msg_msg_with_reply_subject = function()
 end
 
 group.test_parse_control_msg_hmsg_without_reply_subject = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'HMSG FOO.BAR 9 34 45'
     module:_parse_control_msg(msg)
     t.assert_equals(module._state, 2)
@@ -106,7 +106,7 @@ group.test_parse_control_msg_hmsg_without_reply_subject = function()
 end
 
 group.test_parse_control_msg_hmsg_with_reply_subject = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'HMSG FOO.BAR 9 BAZ.69 34 45'
     module:_parse_control_msg(msg)
     t.assert_equals(module._state, 2)
@@ -119,14 +119,14 @@ group.test_parse_control_msg_hmsg_with_reply_subject = function()
 end
 
 group.test_parse_control_msg_error_reading = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'HMG FOO.BAR 9 BAZ.69 34 45'
     module:_parse_control_msg(msg)
     t.assert_equals(module._state, 5)
 end
 
 group.test_parse_msg_headers_one_header = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'NATS/1.0\r\nFoodGroup: vegetable\r\n\r\n'
     module:_parse_msg_headers(msg)
     t.assert_equals(module._state, 3)
@@ -136,7 +136,7 @@ group.test_parse_msg_headers_one_header = function()
 end
 
 group.test_parse_msg_headers_two_header = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'NATS/1.0\r\nFoodGroup: vegetable\r\nItem: tomato\r\n\r\n'
     module:_parse_msg_headers(msg)
     t.assert_equals(module._state, 3)
@@ -148,7 +148,7 @@ group.test_parse_msg_headers_two_header = function()
 end
 
 group.test_parse_msg_headers_err = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'NATS/1.1\r\nFoodGroup: vegetable\r\n\r\n'
     module:_parse_msg_headers(msg)
     t.assert_equals(module._state, 5)
@@ -156,7 +156,7 @@ group.test_parse_msg_headers_err = function()
 end
 
 group.test_parse_shoot_msg = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'PING\r\n'
     local result = module:parse(msg)
     t.assert(result.success)
@@ -166,7 +166,7 @@ group.test_parse_shoot_msg = function()
 end
 
 group.test_parse_msg_with_full_payload = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'HMSG FOO.BAR 9 BAZ.69 34 45\r\nNATS/1.0\r\nFoodGroup: vegetable\r\n\r\nHello World\r\n'
     local result = module:parse(msg)
     t.assert(result.success)
@@ -185,7 +185,7 @@ group.test_parse_msg_with_full_payload = function()
 end
 
 group.test_parse_msg_with_not_full_payload = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'HMSG FOO.BAR 9 BAZ.69 34 45\r\nNATS/1.0\r\nFoodGroup: vegetable\r\n\r\nHello'
     local msg_end = ' World\r\n'
     local result = module:parse(msg)
@@ -208,7 +208,7 @@ group.test_parse_msg_with_not_full_payload = function()
 end
 
 group.test_parse_msg_with_not_full_headers = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'HMSG FOO.BAR 9 BAZ.69 34 45\r\nNATS/1.0\r\nFoodGroup: '
     local msg_end = 'vegetable\r\n\r\nHello World\r\n'
     local result = module:parse(msg)
@@ -231,7 +231,7 @@ group.test_parse_msg_with_not_full_headers = function()
 end
 
 group.test_parse_msg_with_not_full_control_line = function()
-    local module = parser.new()
+    local module = NatsParser.new()
     local msg = 'HMSG FOO.BAR 9 BAZ.6'
     local msg_end = '9 34 45\r\nNATS/1.0\r\nFoodGroup: vegetable\r\n\r\nHello World\r\n'
     local result = module:parse(msg)
@@ -261,7 +261,7 @@ group.test_error_parse = function()
         'Maximum Payload Violation', 'Invalid Subject', 'Permissions Violation for Subscription to test.topic',
         'Permissions Violation for Publish to subjects.test.1', 'Server unexpected error'
     }
-    local module = parser.new()
+    local module = NatsParser.new()
     for _, v in ipairs(err_text_t) do
         local err = module.error_parse(v)
         t.assert_type(err, 'table')

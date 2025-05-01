@@ -23,3 +23,5 @@ COPY tests/local_spec/nats-scm-1.rockspec /tmp
 
 RUN cd /tmp/src && tar czf /tmp/nats.tar.gz ./nats
 RUN tt rocks install /tmp/nats-scm-1.rockspec
+
+#RUN apt update -y && apt upgrade -y && apt install -y zlib1g-dev   - https://www.tarantool.io/ru/doc/latest/platform/app/cookbook/#ffi-zlib-lua

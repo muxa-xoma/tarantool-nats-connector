@@ -52,7 +52,7 @@ local default_serv_type = 'NATS server'
 ---@field permission_read_subject Error
 ---@field permission_write_subject Error
 ---@field unexpected_serv Error
-local errors = {
+local NatsErrorEnum = {
     invalid_connect_params = { message = 'Invalid connection parameters', type = default_con_type, code = 1 },
     mix_connect_params = {
             message = 'Mixing of websocket and non websocket URLs is not allowed',
@@ -146,4 +146,4 @@ local errors = {
 }
 
 
-return errors
+return NatsErrorEnum

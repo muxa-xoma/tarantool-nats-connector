@@ -4,24 +4,29 @@ math.randomseed(os.time())
 
 ---@class TestHelper
 ---@field data_dir string directory for tarantool files
-local M = {
+---@field start_random number what date to start sampling from
+---@field end_random number what number to end the sample with
+---@field new fun():TestHelper create new instance
+---@field random_int fun(self:TestHelper, start_random?:number, end_random?:number):number generate random integer
+---@field random_string fun(self:TestHelper, len?:number):string generate random string
+local TestHelper = {
     data_dir = '/tmp/tests',
     start_random = 5,
     end_random = 15
 }
-M.__index = M
+TestHelper.__index = TestHelper
 
 ---@return TestHelper class instance
-function M.new()
+function TestHelper.new()
     ---@type TestHelper
-    local self = setmetatable({}, M)
+    local self = setmetatable({}, TestHelper)
     return self
 end
 
 ---@param self TestHelper class instance
 ---@param start_random number what date to start sampling from
 ---@param end_random number what number to end the sample with
-function M.random_int(self, start_random, end_random)
+function TestHelper.random_int(self, start_random, end_random)
     start_random = start_random or self.start_random
     end_random = end_random or self.end_random
     return math.random(start_random, end_random)
@@ -30,7 +35,7 @@ end
 ---@param self TestHelper class instance
 ---@param len number string length
 ---@return string random string
-function M.random_string(self, len)
+function TestHelper.random_string(self, len)
     len = len or self:random_int()
     local chars = {{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}, {' ', '. ', ', ', ' - '}}
     local result = ''
@@ -54,4 +59,4 @@ function M.random_string(self, len)
     return result
 end
 
-return M
+return TestHelper

@@ -1,7 +1,7 @@
 local json = require('json')
 local uri = require('uri')
 
-local version = require('nats.utils.version')
+local Version = require('nats.utils.version')
 
 ---@class NatsServerInfo
 ---@alias URI { scheme: string, host: string, service: string, ipv4: string|nil }
@@ -33,14 +33,14 @@ local version = require('nats.utils.version')
 ---@field public new function returns an instance of the class
 ---@field private _check_required_params function checks required parameters
 ---@field private _parse_msg_info function recognizes server parameters
-local M = {}
-M.__index = M
+local NatsServerInfo = {}
+NatsServerInfo.__index = NatsServerInfo
 
 ---@param info_s string json string with nats server parameters
 ---@return NatsServerInfo class instance
-function M.new(info_s)
+function NatsServerInfo.new(info_s)
     ---@type NatsServerInfo
-    local self = setmetatable({}, M)
+    local self = setmetatable({}, NatsServerInfo)
     for k, v in pairs(json.decode(info_s)) do
         self:_parse_msg_info(k, v)
     end
@@ -50,7 +50,7 @@ end
 
 ---@param self NatsServerInfo class instance
 ---@return void
-function M._check_required_params(self)
+function NatsServerInfo._check_required_params(self)
     assert(self.server_id ~= nil, 'In the message of type info there must be a parameter server_id')
     assert(self.server_name ~= nil, 'In the message of type info there must be a parameter server_name')
     assert(self.version ~= nil, 'In the message of type info there must be a parameter version')
@@ -66,15 +66,15 @@ end
 ---@param key string nats server parameter name
 ---@param value string|number|boolean|string[] nats server parameter value
 ---@return void
-function M._parse_msg_info(self, key, value)
+function NatsServerInfo._parse_msg_info(self, key, value)
     if key == 'server_id' then
         self.server_id = tostring(value)
     elseif key == 'server_name' then
         self.server_name = tostring(value)
     elseif key == 'version' then
-        self.version = version.new(value)
+        self.version = Version.new(value)
     elseif key == 'go' then
-        self.go = version.new(value:lstrip('go'))
+        self.go = Version.new(value:lstrip('go'))
     elseif key == 'host' then
         self.host = tostring(value)
     elseif key == 'port' then
@@ -127,4 +127,4 @@ function M._parse_msg_info(self, key, value)
 end
 
 
-return M
+return NatsServerInfo

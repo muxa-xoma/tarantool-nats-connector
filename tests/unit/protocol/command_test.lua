@@ -2,8 +2,8 @@ local t = require('luatest')
 
 local helper = require('tests.helpers.unit')
 
-local command = require('nats.protocol.command')
-local nuid = require('nats.utils.nuid')
+local NatsProtocolConstants = require('nats.protocol.command')
+local Nuid = require('nats.utils.nuid')
 
 
 local group =  t.group('module-protocol-command')
@@ -11,14 +11,14 @@ local group =  t.group('module-protocol-command')
 group.before_all(
         function(cg)
             cg.helper = helper
-            cg.module = command.new()
-            cg.nuid = nuid.new()
+            cg.module = NatsProtocolConstants.new()
+            cg.nuid = Nuid.new()
         end
 )
 
 
 group.test_new = function()
-    local module = command.new()
+    local module = NatsProtocolConstants.new()
     t.assert_type(module, 'table')
     t.assert_type(module.new, 'function')
     t.assert_type(module.connect, 'function')

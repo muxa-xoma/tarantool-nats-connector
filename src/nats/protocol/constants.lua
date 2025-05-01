@@ -13,7 +13,7 @@
 ---@field public hpub string command to publish a message with headers
 ---@field public sub string subscribe to subject command
 ---@field public unsub string unsubscribe command from subject
-local M = {
+local NatsProtocolConstants = {
     delimiter = '\r\n',
     info = 'INFO',
     msg = 'MSG',
@@ -30,4 +30,4 @@ local M = {
     unsub = 'UNSUB'
 }
 
-return M
+return NatsProtocolConstants

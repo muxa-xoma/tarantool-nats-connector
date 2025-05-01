@@ -3,10 +3,10 @@ local json =require('json')
 
 local helper = require('tests.helpers.unit')
 
-local params = require('nats.protocol.connection_parameters')
-local server = require('nats.protocol.server_info')
+local NatsConnectionParameters = require('nats.protocol.connection_parameters')
+local NatsServerInfo = require('nats.protocol.server_info')
 local versions = require('nats.version')
-local version = require('nats.utils.version')
+local Version = require('nats.utils.version')
 
 
 local group =  t.group('module-protocol-connection_parameters')
@@ -18,9 +18,9 @@ group.before_all(
 )
 
 group.test_new_defaults = function()
-    local module = params.new()
-    local lang = version.new(versions.tarantool)
-    local module_version = version.new(versions.module)
+    local module = NatsConnectionParameters.new()
+    local lang = Version.new(versions.tarantool)
+    local module_version = Version.new(versions.module)
     t.assert_equals(module.verbose, false)
     t.assert_equals(module.pedantic, false)
     t.assert_equals(module.tls_required, false)
@@ -46,12 +46,12 @@ group.test_new_all_params = function(cg)
     local auth_token = cg.helper:random_string(cg.helper:random_int(50, 100))
     local jwt = cg.helper:random_string(cg.helper:random_int(100, 200))
     local nkey = cg.helper:random_string(cg.helper:random_int(100, 200))
-    local module = params.new(
+    local module = NatsConnectionParameters.new(
             name, user, password, auth_token, jwt, nkey,
             false, false, true, true, true
     )
-    local lang = version.new(versions.tarantool)
-    local module_version = version.new(versions.module)
+    local lang = Version.new(versions.tarantool)
+    local module_version = Version.new(versions.module)
     t.assert_equals(module.verbose, true)
     t.assert_equals(module.pedantic, true)
     t.assert_equals(module.tls_required, true)
@@ -71,9 +71,9 @@ group.test_new_all_params = function(cg)
 end
 
 group.test_tostring_defaults = function()
-    local module = params.new()
-    local lang = version.new(versions.tarantool)
-    local module_version = version.new(versions.module)
+    local module = NatsConnectionParameters.new()
+    local lang = Version.new(versions.tarantool)
+    local module_version = Version.new(versions.module)
     local result_module = module:tostring()
     t.assert(result_module.success)
     local result = json.decode(result_module.data)
@@ -102,12 +102,12 @@ group.test_new_all_params = function(cg)
     local auth_token = cg.helper:random_string(cg.helper:random_int(50, 100))
     local jwt = cg.helper:random_string(cg.helper:random_int(100, 200))
     local nkey = cg.helper:random_string(cg.helper:random_int(100, 200))
-    local module = params.new(
+    local module = NatsConnectionParameters.new(
             name, user, password, auth_token, jwt, nkey,
             false, false, true, true, true
     )
-    local lang = version.new(versions.tarantool)
-    local module_version = version.new(versions.module)
+    local lang = Version.new(versions.tarantool)
+    local module_version = Version.new(versions.module)
     local result_module = module:tostring()
     t.assert(result_module.success)
     local result = json.decode(result_module.data)
@@ -130,9 +130,9 @@ group.test_new_all_params = function(cg)
 end
 
 group.test_set_server_info_params_defaults = function()
-    local module = params.new()
-    local lang = version.new(versions.tarantool)
-    local module_version = version.new(versions.module)
+    local module = NatsConnectionParameters.new()
+    local lang = Version.new(versions.tarantool)
+    local module_version = Version.new(versions.module)
     ---@language "JSON"
     local server_info_s = [[
     {
@@ -148,7 +148,7 @@ group.test_set_server_info_params_defaults = function()
         "max_payload": 1048576
     }
     ]]
-    local server_info = server.new(server_info_s)
+    local server_info = NatsServerInfo.new(server_info_s)
     local result_module = module:set_server_info_params(server_info)
     t.assert(result_module.success)
     local result = json.decode(result_module.data)
@@ -170,7 +170,7 @@ group.test_set_server_info_params_defaults = function()
 end
 
 group.test_set_server_info_params_echo_error = function()
-    local module = params.new(nil, nil, nil, nil, nil, nil, false)
+    local module = NatsConnectionParameters.new(nil, nil, nil, nil, nil, nil, false)
     ---@language "JSON"
     local server_info_s = [[
     {
@@ -186,7 +186,7 @@ group.test_set_server_info_params_echo_error = function()
         "max_payload": 1048576
     }
     ]]
-    local server_info = server.new(server_info_s)
+    local server_info = NatsServerInfo.new(server_info_s)
     local result_module = module:set_server_info_params(server_info)
     t.assert_not(result_module.success)
     t.assert_equals(result_module.error.code, 1)
@@ -194,7 +194,7 @@ group.test_set_server_info_params_echo_error = function()
 end
 
 group.test_set_server_info_params_not_user_error = function()
-    local module = params.new(nil, nil, 'secret password', nil)
+    local module = NatsConnectionParameters.new(nil, nil, 'secret password', nil)
     ---@language "JSON"
     local server_info_s = [[
     {
@@ -211,7 +211,7 @@ group.test_set_server_info_params_not_user_error = function()
         "auth_required": true
     }
     ]]
-    local server_info = server.new(server_info_s)
+    local server_info = NatsServerInfo.new(server_info_s)
     local result_module = module:set_server_info_params(server_info)
     t.assert_not(result_module.success)
     t.assert_equals(result_module.error.code, 1)
@@ -219,7 +219,7 @@ group.test_set_server_info_params_not_user_error = function()
 end
 
 group.test_set_server_info_params_not_password_error = function()
-    local module = params.new(nil, 'service user', nil, nil)
+    local module = NatsConnectionParameters.new(nil, 'service user', nil, nil)
     ---@language "JSON"
     local server_info_s = [[
     {
@@ -236,7 +236,7 @@ group.test_set_server_info_params_not_password_error = function()
         "auth_required": true
     }
     ]]
-    local server_info = server.new(server_info_s)
+    local server_info = NatsServerInfo.new(server_info_s)
     local result_module = module:set_server_info_params(server_info)
     t.assert_not(result_module.success)
     t.assert_equals(result_module.error.code, 1)
@@ -244,7 +244,7 @@ group.test_set_server_info_params_not_password_error = function()
 end
 
 group.test_set_server_info_params_not_auth_token_error = function()
-    local module = params.new(nil, nil, nil, nil)
+    local module = NatsConnectionParameters.new(nil, nil, nil, nil)
     ---@language "JSON"
     local server_info_s = [[
     {
@@ -261,7 +261,7 @@ group.test_set_server_info_params_not_auth_token_error = function()
         "auth_required": true
     }
     ]]
-    local server_info = server.new(server_info_s)
+    local server_info = NatsServerInfo.new(server_info_s)
     local result_module = module:set_server_info_params(server_info)
     t.assert_not(result_module.success)
     t.assert_equals(result_module.error.code, 1)
@@ -269,7 +269,7 @@ group.test_set_server_info_params_not_auth_token_error = function()
 end
 
 group.test_set_server_info_params_auth_token = function()
-    local module = params.new(nil, nil, nil, helper:random_string(helper:random_int(50, 10)))
+    local module = NatsConnectionParameters.new(nil, nil, nil, helper:random_string(helper:random_int(50, 10)))
     ---@language "JSON"
     local server_info_s = [[
     {
@@ -286,13 +286,13 @@ group.test_set_server_info_params_auth_token = function()
         "auth_required": true
     }
     ]]
-    local server_info = server.new(server_info_s)
+    local server_info = NatsServerInfo.new(server_info_s)
     local result_module = module:set_server_info_params(server_info)
     t.assert(result_module.success)
 end
 
 group.test_set_server_info_params_auth_token = function()
-    local module = params.new(nil, 'service user', 'secret password', nil)
+    local module = NatsConnectionParameters.new(nil, 'service user', 'secret password', nil)
     ---@language "JSON"
     local server_info_s = [[
     {
@@ -309,7 +309,7 @@ group.test_set_server_info_params_auth_token = function()
         "auth_required": true
     }
     ]]
-    local server_info = server.new(server_info_s)
+    local server_info = NatsServerInfo.new(server_info_s)
     local result_module = module:set_server_info_params(server_info)
     t.assert(result_module.success)
 end

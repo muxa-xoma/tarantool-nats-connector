@@ -9,8 +9,8 @@
 ---@field public header function return headers table
 ---@field public sid function returns subscription ID from a message
 ---@field public respond function posts a reply to a message
-local M = {}
-M.__index = M
+local Message = {}
+Message.__index = Message
 
 
 ---@param client NatsClient client connected to NATS server
@@ -19,9 +19,9 @@ M.__index = M
 ---@param reply string subject to which the answer should be sent
 ---@param payload string message payload
 ---@param headers table <string, string> message headers
-function M.new(client, sid, subject, reply, payload, headers)
+function Message.new(client, sid, subject, reply, payload, headers)
     ---@type Message
-    local self = setmetatable({}, M)
+    local self = setmetatable({}, Message)
     self._client = client
     self._sid = sid or nil
     self.subject = subject or ''
@@ -33,13 +33,13 @@ end
 
 ---@param self Message instance class
 ---@return table<string, string> message headers
-function M.header(self)
+function Message.header(self)
     return self.headers
 end
 
 ---@param self Message instance class
 ---@return number subscription ID from a message
-function M.sid(self)
+function Message.sid(self)
     if self._sid == nil then
         error('sid not set')
     end
@@ -49,7 +49,7 @@ end
 ---@param self Message instance class
 ---@param payload string return message payload
 ---@return void
-function M.respond(self, payload)
+function Message.respond(self, payload)
     if self.reply == nil then
         error('no reply subject available')
     end
@@ -60,4 +60,4 @@ function M.respond(self, payload)
 end
 
 
-return M
+return Message

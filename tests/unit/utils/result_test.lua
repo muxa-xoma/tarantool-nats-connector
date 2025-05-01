@@ -2,7 +2,7 @@ local t = require('luatest')
 
 local helper = require('tests.helpers.unit')
 
-local result_module = require('nats.utils.result')
+local Result = require('nats.utils.result')
 
 
 local group =  t.group('utils-module-result')
@@ -11,7 +11,7 @@ group.before_all(
         function(cg)
             cg.helper = helper
             ---@type Result
-            cg.module = result_module
+            cg.module = Result
         end
 )
 

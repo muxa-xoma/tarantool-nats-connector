@@ -5,8 +5,8 @@ local json = require('json')
 local helper = require('tests.helpers.unit')
 
 
-local subscription = require('nats.client.subscription')
-local errors = require('nats.utils.errors')
+local Subscription = require('nats.client.subscription')
+local NatsErrorEnum = require('nats.utils.errors')
 
 
 local group =  t.group('module-client-subscription')
@@ -37,13 +37,13 @@ group.before_each(
                 print(msg)
             end
             cg.max_msgs = cg.helper:random_int(1, 100)
-            cg.module = subscription.new(cg.client, cg.id, cg.subject, cg.queue, cg.cb_f, cg.max_msgs)
+            cg.module = Subscription.new(cg.client, cg.id, cg.subject, cg.queue, cg.cb_f, cg.max_msgs)
         end
 )
 
 
 group.test_new_default = function()
-    local module = subscription.new()
+    local module = Subscription.new()
     t.assert_type(module, 'table')
     t.assert_not(module._client)
     t.assert_equals(module._id, 0)
@@ -60,7 +60,7 @@ group.test_new_default = function()
 end
 
 group.test_new = function(cg)
-    local module = subscription.new(cg.client, cg.id, cg.subject, cg.queue, cg.cb_f, cg.max_msgs)
+    local module = Subscription.new(cg.client, cg.id, cg.subject, cg.queue, cg.cb_f, cg.max_msgs)
     t.assert_type(module, 'table')
     t.assert_equals(module._client, cg.client)
     t.assert_equals(module._id, cg.id)
@@ -85,7 +85,7 @@ group.test_queue = function(cg)
 end
 
 group.test_messages = function(cg)
-    local module = subscription.new(cg.client, cg.id, cg.subject, cg.queue, nil, cg.max_msgs)
+    local module = Subscription.new(cg.client, cg.id, cg.subject, cg.queue, nil, cg.max_msgs)
     module:_start()
     t.assert_type(module:messages(), 'function')
 end
@@ -138,7 +138,7 @@ group.test_next_msg = function(cg)
     local msg = {
         payload = cg.helper:random_string(cg.helper:random_int(10, 50))
     }
-    local module = subscription.new(cg.client, cg.id, cg.subject, cg.queue, nil, cg.max_msgs)
+    local module = Subscription.new(cg.client, cg.id, cg.subject, cg.queue, nil, cg.max_msgs)
     module._pending_queue:put(msg)
     module._pending_size = module._pending_size + #msg.payload
     t.assert_equals(msg, module:next_msg(1))
@@ -146,8 +146,8 @@ group.test_next_msg = function(cg)
 end
 
 group.test_next_msg_timeout = function(cg)
-    local module = subscription.new(cg.client, cg.id, cg.subject, cg.queue, nil, cg.max_msgs)
-    t.assert_error_covers(errors.timeout, module.next_msg, module, 0.5)
+    local module = Subscription.new(cg.client, cg.id, cg.subject, cg.queue, nil, cg.max_msgs)
+    t.assert_error_covers(NatsErrorEnum.timeout, module.next_msg, module, 0.5)
 end
 
 group.test_next_msg_cb = function(cg)
@@ -162,7 +162,7 @@ group.test_start_cb = function(cg)
 end
 
 group.test_start_not_cb = function(cg)
-    local module = subscription.new(cg.client, cg.id, cg.subject, cg.queue, nil, cg.max_msgs)
+    local module = Subscription.new(cg.client, cg.id, cg.subject, cg.queue, nil, cg.max_msgs)
     module:_start()
     t.assert(module._message_iterator)
     t.assert_type(module._message_iterator, 'function')
@@ -170,7 +170,7 @@ group.test_start_not_cb = function(cg)
 end
 
 group.test_start_cb_not_func = function(cg)
-    local module = subscription.new(cg.client, cg.id, cg.subject, cg.queue, 'cb_func', cg.max_msgs)
+    local module = Subscription.new(cg.client, cg.id, cg.subject, cg.queue, 'cb_func', cg.max_msgs)
     t.assert_error_msg_contains('nats: must use function for subscriptions', module._start, module)
 end
 
@@ -187,7 +187,7 @@ group.test_stop_processing_with_cb = function(cg)
 end
 
 group.test_stop_processing_without_cb = function(cg)
-    local module = subscription.new(cg.client, cg.id, cg.subject, cg.queue, nil, cg.max_msgs)
+    local module = Subscription.new(cg.client, cg.id, cg.subject, cg.queue, nil, cg.max_msgs)
     module:_start()
     t.assert_not(module._wait_for_msgs_task)
     t.assert(module._pending_queue)
@@ -218,7 +218,7 @@ group.test__drain_cb_not_nil = function(cg)
 end
 
 group.test__drain_cb_nil = function(cg)
-    local module = subscription.new(cg.client, cg.id, cg.subject, cg.queue, nil, cg.max_msgs)
+    local module = Subscription.new(cg.client, cg.id, cg.subject, cg.queue, nil, cg.max_msgs)
     module:_start()
     local count = 20
     for _ = 1, count, 1 do
@@ -251,23 +251,23 @@ group.test_drain_self_closed = function(cg)
     t.assert(cg.module._wait_for_msgs_task:status() == 'dead')
     t.assert(cg.module._pending_queue:is_closed())
     t.assert(cg.module._closed)
-    t.assert_error_covers(errors.bad_subscription, cg.module.drain, cg.module)
+    t.assert_error_covers(NatsErrorEnum.bad_subscription, cg.module.drain, cg.module)
 end
 
 group.test_drain_client_closed = function(cg)
     local client = table.deepcopy(cg.client)
     client.is_closed = function() return true end
-    local module = subscription.new(client, cg.id, cg.subject, cg.queue, cg.cb_f, cg.max_msgs)
+    local module = Subscription.new(client, cg.id, cg.subject, cg.queue, cg.cb_f, cg.max_msgs)
     module:_start()
-    t.assert_error_covers(errors.connection_closed, module.drain, module)
+    t.assert_error_covers(NatsErrorEnum.connection_closed, module.drain, module)
 end
 
 group.test_drain_client_draining = function(cg)
     local client = table.deepcopy(cg.client)
     client.is_draining = function() return true end
-    local module = subscription.new(client, cg.id, cg.subject, cg.queue, cg.cb_f, cg.max_msgs)
+    local module = Subscription.new(client, cg.id, cg.subject, cg.queue, cg.cb_f, cg.max_msgs)
     module:_start()
-    t.assert_error_covers(errors.connection_draining, module.drain, module)
+    t.assert_error_covers(NatsErrorEnum.connection_draining, module.drain, module)
 end
 
 group.test_unsubscribe = function(cg)
@@ -286,21 +286,21 @@ group.test_unsubscribe_self_closed = function(cg)
     t.assert(cg.module._wait_for_msgs_task:status() == 'dead')
     t.assert(cg.module._pending_queue:is_closed())
     t.assert(cg.module._closed)
-    t.assert_error_covers(errors.bad_subscription, cg.module.unsubscribe, cg.module)
+    t.assert_error_covers(NatsErrorEnum.bad_subscription, cg.module.unsubscribe, cg.module)
 end
 
 group.test_unsubscribe_client_closed = function(cg)
     local client = table.deepcopy(cg.client)
     client.is_closed = function() return true end
-    local module = subscription.new(client, cg.id, cg.subject, cg.queue, cg.cb_f, cg.max_msgs)
+    local module = Subscription.new(client, cg.id, cg.subject, cg.queue, cg.cb_f, cg.max_msgs)
     module:_start()
-    t.assert_error_covers(errors.connection_closed, module.unsubscribe, module)
+    t.assert_error_covers(NatsErrorEnum.connection_closed, module.unsubscribe, module)
 end
 
 group.test_unsubscribe_client_draining = function(cg)
     local client = table.deepcopy(cg.client)
     client.is_draining = function() return true end
-    local module = subscription.new(client, cg.id, cg.subject, cg.queue, cg.cb_f, cg.max_msgs)
+    local module = Subscription.new(client, cg.id, cg.subject, cg.queue, cg.cb_f, cg.max_msgs)
     module:_start()
-    t.assert_error_covers(errors.connection_draining, module.unsubscribe, module)
+    t.assert_error_covers(NatsErrorEnum.connection_draining, module.unsubscribe, module)
 end

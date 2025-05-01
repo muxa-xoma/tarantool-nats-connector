@@ -26,13 +26,13 @@ constants.TOTAL_LENGTH = constants.PREFIX_LENGTH + constants.SEQ_LENGTH
 ---@field private _reset_sequential function resets sequences
 ---@field public new function returns an instance of the class
 ---@field public next function returns random string
-local M = {}
-M.__index = M
+local Nuid = {}
+Nuid.__index = Nuid
 
 
 ---@return Nuid # instance of class Nuid
-function M.new()
-    local self = setmetatable({}, M)
+function Nuid.new()
+    local self = setmetatable({}, Nuid)
     self:_randomize_prefix()
     self:_reset_sequential()
     return self
@@ -40,7 +40,7 @@ end
 
 ---@param self Nuid instance of class Nuid
 ---@return nil
-function M._randomize_prefix(self)
+function Nuid._randomize_prefix(self)
     local tmp_t = {}
     for _ = 1, constants.PREFIX_LENGTH, 1 do
         local char_number = math.random(1, constants.BASE)
@@ -51,14 +51,14 @@ end
 
 ---@param self Nuid instance of class Nuid
 ---@return nil
-function M._reset_sequential(self)
+function Nuid._reset_sequential(self)
     self._seq = math.random(0, constants.MAX_SEQ)
     self._inc = constants.MIN_INC + math.random(0, constants.INC)
 end
 
 ---@param self Nuid instance of class Nuid
 ---@return string
-function M.next(self)
+function Nuid.next(self)
     self._seq = self._seq + self._inc
     if self._seq >= constants.MAX_SEQ then
         self:_randomize_prefix()
@@ -76,4 +76,4 @@ function M.next(self)
 end
 
 
-return M
+return Nuid

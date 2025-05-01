@@ -2,7 +2,7 @@ local t = require('luatest')
 
 local helper = require('tests.helpers.unit')
 
-local server = require('nats.protocol.server_info')
+local NatsServerInfo = require('nats.protocol.server_info')
 
 
 local group =  t.group('module-protocol-server_info')
@@ -28,7 +28,7 @@ group.test_new_required_params = function()
         "max_payload": 1048576
     }
     ]]
-    local serv = server.new(params)
+    local serv = NatsServerInfo.new(params)
     t.assert_equals(serv.server_id, 'NCTGVP7HFGZ4DNM4A5YRZGBKGOKTE2TXIXY4OGABCKTPO4WAQ6AN4HVI')
     t.assert_equals(serv.server_name, 'NCTGVP7HFGZ4DNM4A5YRZGBKGOKTE2TXIXY4OGABCKTPO4WAQ6AN4HVI')
     t.assert_equals(serv.version:tostring(), "2.10.24")
@@ -71,7 +71,7 @@ group.test_new_all_params = function()
         "xkey": "XAEJI3N2P7X73BBDM6WNLN4E5L3CPR6A6JD2FAYURW3JPCAA3CHRVYWT"
     }
     ]]
-    local serv = server.new(params)
+    local serv = NatsServerInfo.new(params)
     t.assert_equals(serv.server_id, 'NCTGVP7HFGZ4DNM4A5YRZGBKGOKTE2TXIXY4OGABCKTPO4WAQ6AN4HVI')
     t.assert_equals(serv.server_name, 'NCTGVP7HFGZ4DNM4A5YRZGBKGOKTE2TXIXY4OGABCKTPO4WAQ6AN4HVI')
     t.assert_equals(serv.version:tostring(), "2.10.24")
@@ -145,7 +145,7 @@ group.test_new_assert_server_id = function()
         "xkey": "XAEJI3N2P7X73BBDM6WNLN4E5L3CPR6A6JD2FAYURW3JPCAA3CHRVYWT"
     }
     ]]
-    t.assert_error_msg_contains('In the message of type info there must be a parameter server_id', server.new, params)
+    t.assert_error_msg_contains('In the message of type info there must be a parameter server_id', NatsServerInfo.new, params)
 end
 
 group.test_new_assert_server_name = function()
@@ -178,7 +178,7 @@ group.test_new_assert_server_name = function()
         "xkey": "XAEJI3N2P7X73BBDM6WNLN4E5L3CPR6A6JD2FAYURW3JPCAA3CHRVYWT"
     }
     ]]
-    t.assert_error_msg_contains('In the message of type info there must be a parameter server_name', server.new, params)
+    t.assert_error_msg_contains('In the message of type info there must be a parameter server_name', NatsServerInfo.new, params)
 end
 
 group.test_new_assert_version = function()
@@ -211,7 +211,7 @@ group.test_new_assert_version = function()
         "xkey": "XAEJI3N2P7X73BBDM6WNLN4E5L3CPR6A6JD2FAYURW3JPCAA3CHRVYWT"
     }
     ]]
-    t.assert_error_msg_contains('In the message of type info there must be a parameter version', server.new, params)
+    t.assert_error_msg_contains('In the message of type info there must be a parameter version', NatsServerInfo.new, params)
 end
 
 group.test_new_assert_go = function()
@@ -244,7 +244,7 @@ group.test_new_assert_go = function()
         "xkey": "XAEJI3N2P7X73BBDM6WNLN4E5L3CPR6A6JD2FAYURW3JPCAA3CHRVYWT"
     }
     ]]
-    t.assert_error_msg_contains('In the message of type info there must be a parameter go', server.new, params)
+    t.assert_error_msg_contains('In the message of type info there must be a parameter go', NatsServerInfo.new, params)
 end
 
 group.test_new_assert_host = function()
@@ -277,7 +277,7 @@ group.test_new_assert_host = function()
         "xkey": "XAEJI3N2P7X73BBDM6WNLN4E5L3CPR6A6JD2FAYURW3JPCAA3CHRVYWT"
     }
     ]]
-    t.assert_error_msg_contains('In the message of type info there must be a parameter host', server.new, params)
+    t.assert_error_msg_contains('In the message of type info there must be a parameter host', NatsServerInfo.new, params)
 end
 
 group.test_new_assert_port = function()
@@ -310,7 +310,7 @@ group.test_new_assert_port = function()
         "xkey": "XAEJI3N2P7X73BBDM6WNLN4E5L3CPR6A6JD2FAYURW3JPCAA3CHRVYWT"
     }
     ]]
-    t.assert_error_msg_contains('In the message of type info there must be a parameter port', server.new, params)
+    t.assert_error_msg_contains('In the message of type info there must be a parameter port', NatsServerInfo.new, params)
 end
 
 group.test_new_assert_headers = function()
@@ -343,7 +343,7 @@ group.test_new_assert_headers = function()
         "xkey": "XAEJI3N2P7X73BBDM6WNLN4E5L3CPR6A6JD2FAYURW3JPCAA3CHRVYWT"
     }
     ]]
-    t.assert_error_msg_contains('In the message of type info there must be a parameter headers', server.new, params)
+    t.assert_error_msg_contains('In the message of type info there must be a parameter headers', NatsServerInfo.new, params)
 end
 
 group.test_new_assert_max_payload = function()
@@ -376,7 +376,7 @@ group.test_new_assert_max_payload = function()
         "xkey": "XAEJI3N2P7X73BBDM6WNLN4E5L3CPR6A6JD2FAYURW3JPCAA3CHRVYWT"
     }
     ]]
-    t.assert_error_msg_contains('In the message of type info there must be a parameter max_payload', server.new, params)
+    t.assert_error_msg_contains('In the message of type info there must be a parameter max_payload', NatsServerInfo.new, params)
 end
 
 group.test_new_assert_proto = function()
@@ -409,5 +409,5 @@ group.test_new_assert_proto = function()
         "xkey": "XAEJI3N2P7X73BBDM6WNLN4E5L3CPR6A6JD2FAYURW3JPCAA3CHRVYWT"
     }
     ]]
-    t.assert_error_msg_contains('In the message of type info there must be a parameter proto', server.new, params)
+    t.assert_error_msg_contains('In the message of type info there must be a parameter proto', NatsServerInfo.new, params)
 end

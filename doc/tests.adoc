@@ -10,6 +10,11 @@ docker compose --profile dev up -d
 sleep 1
 docker exec -it tarantool-dev console
 ----
+nats = require('nats')
+nc = nats.client.new('nats:4222')
+sub = nc:subscribe('test', 'test-q')
+nc:publish('test', 'test')
+
 
 === Stop
 

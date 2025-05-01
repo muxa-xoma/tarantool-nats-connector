@@ -7,18 +7,18 @@
 ---@field public hash string|nil commit hash
 ---@field public new function returns an instance of the class
 ---@field public tostring function returns the version as a string
-local M = {
+local Version = {
     prefix = '',
     major = 0,
     minor = 0,
     patch = 0
 }
-M.__index = M
+Version.__index = Version
 
 ---@param version string string version
 ---@return Version # instance of class Version
-function M.new(version)
-    local self = setmetatable({}, M)
+function Version.new(version)
+    local self = setmetatable({}, Version)
     local prefix, major, minor, patch, dev = string.match(version, '^(v?)(%d+)%.(%d+)%.(%d+)(%-?[%w%-%.]*)')
     self.prefix = prefix and tostring(prefix) or self.prefix
     self.major = major and tonumber(major) or self.major
@@ -38,7 +38,7 @@ end
 
 ---@param self Version instance of class Version
 ---@return string # string version
-function M.tostring(self)
+function Version.tostring(self)
     local suffix = ''
     if self.pre_release and self.hash then
         suffix = table.concat({ suffix, self.pre_release, self.hash }, '-')
@@ -48,4 +48,4 @@ function M.tostring(self)
     return self.prefix .. table.concat({ self.major, self.minor, self.patch }, '.') .. suffix
 end
 
-return M
+return Version
