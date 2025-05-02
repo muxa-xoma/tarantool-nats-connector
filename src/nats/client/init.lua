@@ -1,13 +1,13 @@
-local log = require('log')
 local math = require('math')
 local fiber = require('fiber')
 
 local NatsErrorEnum = require('nats.utils.errors')
+local Nuid = require('nats.utils.nuid')
 local NatsServer = require('nats.client.server')
 local Subscription = require('nats.client.subscription')
 local Message = require('nats.client.message')
+local NatsClientOptions = require('nats.client.options')
 local protocol = require('nats.protocol')
-local Nuid = require('nats.utils.nuid')
 local transport = require('nats.transport')
 
 
@@ -31,66 +31,21 @@ local NatsClientStatus = {
     draining_pubs = 6
 }
 
----@param err Error
----@return void
-local function default_error_callback(err)
-    if type(err) == 'table' then
-        log.error('%s [%s]: %s', err.type, err.code, err.message)
-    else
-        log.error(err)
-    end
-end
-
----@class NatsClientOptions
----@field error_cb function Callback to report errors
----@field disconnected_cb function|nil Callback to report disconnection from NATS
----@field closed_cb function|nil Callback to report when client stops reconnection to NATS
----@field discovered_server_cb function|nil Callback to report when a new server joins the cluster
----@field reconnected_cb function|nil Callback to report when client reconnected to server
----@field name string|nil Label the connection with name (shown in NATS monitoring)
----@field pedantic boolean|nil Turns on additional strict format checking, e.g. for properly formed subjects
----@field verbose boolean|nil Turns on +OK protocol acknowledgements
----@field allow_reconnect boolean Ability to reconnect to servers
----@field connect_timeout number Server connection timeout
----@field reconnect_time_wait number Wait time between reconnects
----@field max_reconnect_attempts number Maximum number of reconnection attempts
----@field ping_interval number Interval between sending pings to the server
----@field max_outstanding_pings number Maximum number of failed pings
----@field dont_randomize boolean Do not mix servers in the pool
----@field no_echo boolean|nil Disabling the echo parameter
----@field user string|nil User to connect to the server
----@field password string|nil Password to connect to the server
----@field drain_timeout number Waiting for a graceful disconnect from the server
----@field inbox_prefix string Prefix for random topics
----@field pending_size number Max size of the pending buffer for publishing commands
----@field flush_timeout number Timeout for flushing pending buffer
----@field flusher_queue_size number Size of the flusher queue
-local NatsClientOptions = {
-    error_cb = default_error_callback,
-    allow_reconnect = true,
-    connect_timeout = 2,
-    reconnect_time_wait = 2,
-    max_reconnect_attempts = 60,
-    ping_interval = 120,
-    max_outstanding_pings = 2,
-    dont_randomize = false,
-    no_echo = false,
-    drain_timeout = 30,
-    inbox_prefix = '_INBOX',
-    pending_size = 2 * 1024 * 1024,
-    flush_timeout = 10,
-    flusher_queue_size = 1024
-}
-
 ---@class NatsClient class representing a connection to NATS
 ---@field private _server_pool NatsServer[] server pool
+---@field private _cb table<string, function> callbacks
+---@field private _connection_params NatsConnectionParameters connection parameters
+---@field private _params table<string, any> client parameters
+---
+---@field private _setup_server_pool fun(servers:string|table):void setup server pool
+---@field private _setup_client_options fun(options:NatsConnectionParameters|nil):void setup client options
 local NatsClient = {}
 NatsClient.__index = NatsClient
 
 -- setup --
 
----@param servers string|table connection string or connection strings list
----@param options NatsConnectionParameters|nil connection parameters
+---@param servers string|string[] connection string or connection strings list
+---@param options table<string, any>|nil connection parameters
 ---@return NatsClient
 function NatsClient.new(servers, options)
     ---@type NatsClient
@@ -153,6 +108,7 @@ function NatsClient._setup_server_pool(self, servers)
         error(NatsErrorEnum.invalid_connect_params)
     end
     self._server_pool = {}
+    -- TODO: schema validation
     if type(servers) == 'string' then
         table.insert(self._server_pool, NatsServer.new(servers))
     else
@@ -166,132 +122,49 @@ function NatsClient._setup_server_pool(self, servers)
 end
 
 ---@param self NatsClient class instance
----@param options NatsClientOptions connection parameters
+---@param options table<string, any>|nil connection parameters
 ---@return void
 function NatsClient._setup_client_options(self, options)
-    if options ~= nil and type(options) ~= 'table' then
-        error(NatsErrorEnum.invalid_connect_params)
-    end
-    self._cb = {}
-    if options and type(options.error_cb) ~= 'function' then
-        error(NatsErrorEnum.invalid_connect_params)
+    local client_options = NatsClientOptions.new(options)
+    if client_options.success then
+        options = client_options.data
     else
-        self._cb.error_cb = options and options.error_cb or NatsClientOptions.error_cb
+        error(client_options.error)
     end
-    if options and options.disconnected_cb ~= nil and type(options.disconnected_cb) ~= 'function' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._cb.disconnected_cb = options and options.disconnected_cb or NatsClientOptions.disconnected_cb
-    end
-    if options and options.closed_cb ~= nil and type(options.closed_cb) ~= 'function' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._cb.closed_cb = options and options.closed_cb or NatsClientOptions.closed_cb
-    end
-    if options and options.discovered_server_cb ~= nil and type(options.discovered_server_cb) ~= 'function' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._cb.discovered_server_cb = options and options.discovered_server_cb or NatsClientOptions.discovered_server_cb
-    end
-    if options and options.reconnected_cb ~= nil and type(options.reconnected_cb) ~= 'function' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._cb.reconnected_cb = options and options.reconnected_cb or NatsClientOptions.reconnected_cb
-    end
-    if options and options.name ~= nil and type(options.name) ~= 'string' then
-        error(NatsErrorEnum.invalid_connect_params)
-    end
-    if options and options.user ~= nil and type(options.user) ~= 'string' then
-        error(NatsErrorEnum.invalid_connect_params)
-    end
-    if options and options.password ~= nil and type(options.password) ~= 'string' then
-        error(NatsErrorEnum.invalid_connect_params)
-    end
-    if options and options.no_echo ~= nil and type(options.no_echo) ~= 'boolean' then
-        error(NatsErrorEnum.invalid_connect_params)
-    end
-    if options and options.pedantic ~= nil and type(options.pedantic) ~= 'boolean' then
-        error(NatsErrorEnum.invalid_connect_params)
-    end
-    if options and options.verbose ~= nil and type(options.verbose) ~= 'boolean' then
-        error(NatsErrorEnum.invalid_connect_params)
-    end
+    self._cb = {
+        error_cb = options.error_cb,
+        disconnected_cb = options.disconnected_cb,
+        closed_cb = options.closed_cb,
+        discovered_server_cb = options.discovered_server_cb,
+        reconnected_cb = options.reconnected_cb
+    }
     self._connection_params = protocol.NatsConnectionParameters.new(
-            options and options.name or NatsClientOptions.name,
-            options and options.user or NatsClientOptions.user,
-            options and options.password or NatsClientOptions.password,
+            options.name,
+            options.user,
+            options.password,
             nil,
             nil,
             nil,
-            not (options and options.no_echo or NatsClientOptions.no_echo),
-            nil,
-            options and options.verbose or NatsClientOptions.verbose,
-            options and options.pedantic or NatsClientOptions.pedantic,
+            not options.no_echo,
+            true,
+            options.verbose,
+            options.pedantic,
             nil
     )
-    self._params = {}
-    if options and options.allow_reconnect ~= nil and type(options.allow_reconnect) ~= 'boolean' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._params.allow_reconnect = options and options.allow_reconnect or NatsClientOptions.allow_reconnect
-    end
-    if options and options.connect_timeout ~= nil and type(options.connect_timeout) ~= 'number' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._params.connect_timeout = options and options.connect_timeout or NatsClientOptions.connect_timeout
-    end
-    if options and options.reconnect_time_wait ~= nil and type(options.reconnect_time_wait) ~= 'number' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._params.reconnect_time_wait = options and options.reconnect_time_wait or NatsClientOptions.reconnect_time_wait
-    end
-    if options and options.max_reconnect_attempts ~= nil and type(options.max_reconnect_attempts) ~= 'number' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._params.max_reconnect_attempts = options and options.max_reconnect_attempts or NatsClientOptions.max_reconnect_attempts
-    end
-    if options and options.ping_interval ~= nil and type(options.ping_interval) ~= 'number' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._params.ping_interval = options and options.ping_interval or NatsClientOptions.ping_interval
-    end
-    if options and options.max_outstanding_pings ~= nil and type(options.max_outstanding_pings) ~= 'number' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._params.max_outstanding_pings = options and options.max_outstanding_pings or NatsClientOptions.max_outstanding_pings
-    end
-    if options and options.drain_timeout ~= nil and type(options.drain_timeout) ~= 'number' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._params.drain_timeout = options and options.drain_timeout or NatsClientOptions.drain_timeout
-    end
-    if options and options.inbox_prefix ~= nil and type(options.inbox_prefix) ~= 'string' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._params.inbox_prefix = options and options.inbox_prefix or NatsClientOptions.inbox_prefix
-    end
-    if options and options.pending_size ~= nil and type(options.pending_size) ~= 'number' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._params.pending_size = options and options.pending_size or NatsClientOptions.pending_size
-    end
-    if options and options.flush_timeout ~= nil and type(options.flush_timeout) ~= 'number' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._params.flush_timeout = options and options.flush_timeout or NatsClientOptions.flush_timeout
-    end
-    if options and options.flusher_queue_size ~= nil and type(options.flusher_queue_size) ~= 'number' then
-        error(NatsErrorEnum.invalid_connect_params)
-    else
-        self._params.flusher_queue_size = options and options.flusher_queue_size or NatsClientOptions.flusher_queue_size
-    end
-    local dont_randomize
-    if options and options.dont_randomize ~= nil then
+    self._params = {
+        allow_reconnect = options.allow_reconnect,
+        connect_timeout = options.connect_timeout,
+        reconnect_time_wait = options.reconnect_time_wait,
+        max_reconnect_attempts = options.max_reconnect_attempts,
+        ping_interval = options.ping_interval,
+        max_outstanding_pings = options.max_outstanding_pings,
+        drain_timeout = options.drain_timeout,
+        inbox_prefix = options.inbox_prefix,
+        pending_size = options.pending_size,
+        flush_timeout = options.flush_timeout,
+        flusher_queue_size = options.flusher_queue_size,
         dont_randomize = options.dont_randomize
-    else
-        dont_randomize = NatsClientOptions.dont_randomize
-    end
-    self._params.dont_randomize = dont_randomize
+    }
     if #self._server_pool > 1 and not self._params.dont_randomize then
         table.sort(self._server_pool, function (_, _) return math.random(1, 2) == 1 end)
     end
