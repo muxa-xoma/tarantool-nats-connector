@@ -14,14 +14,14 @@ local transport = require('nats.transport')
 
 math.randomseed(os.time())
 
----@class NatsClientStatus enum
----@field disconnected number 0
----@field connected number 1
----@field closed number 2
----@field reconnecting number 3
----@field connecting number 4
----@field draining_subs number 5
----@field draining_pubs number 6
+---@class NatsClientStatus @enum
+---@field disconnected number @0
+---@field connected number @1
+---@field closed number @2
+---@field reconnecting number @3
+---@field connecting number @4
+---@field draining_subs number @5
+---@field draining_pubs number @6
 local NatsClientStatus = {
     disconnected = 0,
     connected = 1,
@@ -32,40 +32,83 @@ local NatsClientStatus = {
     draining_pubs = 6
 }
 
----@class NatsClient class representing a connection to NATS
----@field private _server_pool NatsServer[] server pool
----@field private _cb table<string, function> callbacks
----@field private _connection_params NatsConnectionParameters connection parameters
----@field private _params table<string, any> client parameters
----@field private _status NatsClientStatus client status
----@field private _nuid Nuid random string generator to generate unique subjects
----@field private _command NatsClientCommand NATS command builder
----@field private _parser NatsParser NATS protocol parser
----@field private _flush_queue userdata fiber channel, used to wait for flushing messages
----@field private _pending string pending data
----@field private _sid number current subscription id
----@field private _subs table<string, Subscription> subscriptions
----@field private _resp_map table<string, function> map of pending responses
----@field private _pongs string[]|userdata[] list of pending pongs
----@field private _pings_outstanding number count of pending pings
----@field private _pongs_received number count of received pongs
----@field private _pending_data_size number count of pending data
----@field public stats {in_msgs:number,out_msgs:number,in_bytes:number,out_bytes:number,reconnects:number,errors_received:number} statistics
----@field private _transport Transport|nil transport
----@field private _error Error|nil last error
----@field private _current_server NatsServer|nil current server
----
----@field private _setup_server_pool fun(servers:string|table):void setup server pool
----@field private _shuffle_server_pool fun():void shuffle server pool
----@field private _setup_client_options fun(options:NatsConnectionParameters|nil):void setup client options
----@field private _select_next_server fun():void select next server in pool
+---@class NatsClient @class representing a connection to NATS
+---@field private _server_pool NatsServer[] @server pool
+---@field private _cb table<string, function> @callbacks
+---@field private _connection_params NatsConnectionParameters @connection parameters
+---@field private _params table<string, any> @client parameters
+---@field private _status NatsClientStatus @client status
+---@field private _nuid Nuid @random string generator to generate unique subjects
+---@field private _command NatsClientCommand @NATS command builder
+---@field private _parser NatsParser @NATS protocol parser
+---@field private _flush_queue userdata @fiber channel, used to wait for flushing messages
+---@field private _pending string @pending data
+---@field private _sid number @current subscription id
+---@field private _subs table<string, Subscription> @subscriptions
+---@field private _resp_map table<string, function> @map of pending responses
+---@field private _pongs string[]|userdata[] @list of pending pongs
+---@field private _pings_outstanding number @count of pending pings
+---@field private _pongs_received number @count of received pongs
+---@field private _pending_data_size number @count of pending data
+---@field private _transport Transport|nil @transport
+---@field private _error Error|nil @last error
+---@field private _current_server NatsServer|nil @current server
+---@field public stats {in_msgs:number,out_msgs:number,in_bytes:number,out_bytes:number,reconnects:number,errors_received:number} @statistics
+---@field private _setup_server_pool fun(self:NatsClient,servers:string|table):void @setup server pool
+---@field private _shuffle_server_pool fun(self:NatsClient):void @shuffle server pool
+---@field private _setup_client_options fun(self:NatsClient, options:NatsConnectionParameters|nil):void @setup client options
+---@field private _select_next_server fun(self:NatsClient):void @select next server in pool
+---@field private _close fun(self:NatsClient,status:NatsClientStatus,do_cbs:boolean):void @close connection
+---@field private _flush_pending fun(self:NatsClient,force_flush:boolean):void @flush pending data
+---@field private _flusher fun(self:NatsClient):void @flusher
+---@field private _send_ping fun(self:NatsClient,future:userdata|nil):void @send ping
+---@field private _send_command fun(self:NatsClient,cmd:string,priority:boolean):void @send command
+---@field private _send_publish fun(self:NatsClient,subject:string,reply:string,payload:string,payload_size:number,headers:table<string,string>):void @send publish
+---@field private _remove_sub fun(self:NatsClient,sid:number):void @remove subscription
+---@field private _send_subscribe fun(self:NatsClient,subscription:Subscription):void @send subscribe
+---@field private _send_unsubscribe fun(self:NatsClient,sid:number,limit:number):void @send unsubscribe
+---@field private _request_sub_callback fun(msg:Message):void @request subscription callback
+---@field private _request fun(self:NatsClient,subject:string,payload:string,headers:table<string,string>,timeout:number):void @request
+---@field private _process_info fun(self:NatsClient,info_string:string,initial_connection:boolean):void @process info
+---@field private _attempt_reconnect fun(self:NatsClient):void @attempt reconnect
+---@field private _process_disconnect fun(self:NatsClient):void @process disconnect
+---@field private _process_op_err fun(self:NatsClient,err:Error):void @process operation error
+---@field private _process_connect_init fun(self:NatsClient):void @process connect init
+---@field private _ping_interval fun(self:NatsClient):void @send pings for server
+---@field private _process_err fun(self:NatsClient,err:Error):void @process error
+---@field private _process_ping fun(self:NatsClient):void @process ping
+---@field private _process_pong fun(self:NatsClient):void @process pong
+---@field private _process_in_message fun(self:NatsClient,msg:Message):void @process incoming message
+---@field private _process_msg fun(self:NatsClient,msg:table<string,string|number|table>):void @process message
+---@field private _read_loop fun(self:NatsClient):void @read loop
+---@field public new fun(servers:string|string[],options:NatsConnectionParameters|nil):NatsClient @constructor
+---@field public close fun(self:NatsClient):void @close connection
+---@field public drain fun(self:NatsClient):void @drain subscriptions and publishes
+---@field public flush fun(self:NatsClient,timeout:number|nil):void @flush pending data
+---@field public publish fun(self:NatsClient,subject:string,payload:string,reply:string|nil,headers:table<string,string>|nil):void @publish message
+---@field public subscribe fun(self:NatsClient,subject:string,queue:string|nil,cb:fun(msg:Message)|nil,max_msgs:number|nil,pending_msgs_limit:number|nil,pending_bytes_limit:number|nil):Subscription @subscribe to subject
+---@field public new_inbox fun(self:NatsClient):string @generate new inbox subject
+---@field public request fun(self:NatsClient,subject:string,payload:string,headers:table<string,string>|nil,timeout:number|nil):Message @request message
+---@field public connected_url fun(self:NatsClient):URI|nil @get connected url
+---@field public servers fun(self:NatsClient):URI[] @get servers
+---@field public discovered_servers fun(self:NatsClient):URI[] @get discovered servers
+---@field public max_payload fun(self:NatsClient):number|nil @get max payload size
+---@field public client_id fun(self:NatsClient):number|nil @get client id
+---@field public last_error fun(self:NatsClient):Error|nil @get last error
+---@field public is_closed fun(self:NatsClient):boolean @is closed
+---@field public is_reconnecting fun(self:NatsClient):boolean @is reconnecting
+---@field public is_connected fun(self:NatsClient):boolean @is connected
+---@field public is_connecting fun(self:NatsClient):boolean @is connecting
+---@field public is_draining fun(self:NatsClient):boolean @is draining
+---@field public is_draining_pubs fun(self:NatsClient):boolean @is draining pubs
+---@field public connected_server_version fun(self:NatsClient):Version|nil @get connected server version
 local NatsClient = {}
 NatsClient.__index = NatsClient
 
 -- setup --
 
----@param servers string|string[] connection string or connection strings list
----@param options table<string, any>|nil connection parameters
+---@param servers string|string[] @connection string or connection strings list
+---@param options table<string, any>|nil @connection parameters
 ---@return NatsClient
 function NatsClient.new(servers, options)
     ---@type NatsClient
@@ -120,8 +163,8 @@ function NatsClient.new(servers, options)
     return self
 end
 
----@param self NatsClient class instance
----@param servers string|table connection string or connection strings list
+---@param self NatsClient @class instance
+---@param servers string|table @connection string or connection strings list
 ---@return void
 function NatsClient._setup_server_pool(self, servers)
     if type(servers) ~= 'string' and type(servers) ~= 'table' then
@@ -141,8 +184,23 @@ function NatsClient._setup_server_pool(self, servers)
     end
 end
 
----@param self NatsClient class instance
----@param options table<string, any>|nil connection parameters
+---@param self NatsClient @class instance
+---@return void
+function NatsClient._shuffle_server_pool(self)
+    local clone = table.deepcopy(self._server_pool)
+    for i = #clone, 2, -1 do
+        local j = math.random(1, i)
+        clone[i], clone[j] = clone[j], clone[i]
+    end
+    if json.encode(clone) == json.encode(self._server_pool) then
+        self:_shuffle_server_pool()
+    else
+        self._server_pool = clone
+    end
+end
+
+---@param self NatsClient @class instance
+---@param options table<string, any>|nil @connection parameters
 ---@return void
 function NatsClient._setup_client_options(self, options)
     local client_options = NatsClientOptions.new(options)
@@ -190,22 +248,7 @@ function NatsClient._setup_client_options(self, options)
     end
 end
 
----@param self NatsClient class instance
----@return void
-function NatsClient._shuffle_server_pool(self)
-    local clone = table.deepcopy(self._server_pool)
-    for i = #clone, 2, -1 do
-        local j = math.random(1, i)
-        clone[i], clone[j] = clone[j], clone[i]
-    end
-    if json.encode(clone) == json.encode(self._server_pool) then
-        self:_shuffle_server_pool()
-    else
-        self._server_pool = clone
-    end
-end
-
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return void
 function NatsClient._select_next_server(self)
     while true do
@@ -245,20 +288,23 @@ end
 
 -- closed --
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return void
 function NatsClient.close(self)
     self:_close(NatsClientStatus.closed)
 end
 
----@param self NatsClient class instance
----@param status NatsClientStatus the status with which the connection will be closed
----@param do_cbs boolean the need to call callback functions
+---@param self NatsClient @class instance
+---@param status NatsClientStatus @the status with which the connection will be closed
+---@param do_cbs boolean @the need to call callback functions
 ---@return void
 function NatsClient._close(self, status, do_cbs)
     if self:is_closed() then
         self._status = status
         return
+    end
+    for _, v in pairs(self._subs) do
+        v:drain()
     end
     self._status = NatsClientStatus.closed
     self:_flush_pending()
@@ -285,9 +331,6 @@ function NatsClient._close(self, status, do_cbs)
             self._pending = ''
         end
     end
-    for _, v in pairs(self._subs) do
-        v:drain()
-    end
     if self._transport ~= nil then
         local result = self._transport:close()
         if not result.success then
@@ -304,7 +347,7 @@ function NatsClient._close(self, status, do_cbs)
     end
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return void
 function NatsClient.drain(self)
     if self:is_draining() then
@@ -344,8 +387,8 @@ end
 
 -- flusher --
 
----@param self NatsClient class instance
----@param force_flush boolean wait for an answer
+---@param self NatsClient @class instance
+---@param force_flush boolean @wait for an answer
 ---@return void
 function NatsClient._flush_pending(self, force_flush)
     assert(self._flush_queue, 'must be called only from Client.new')
@@ -368,7 +411,7 @@ function NatsClient._flush_pending(self, force_flush)
     end
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return void
 function NatsClient._flusher(self)
     assert(self._transport, 'must be called only from Client.new')
@@ -397,8 +440,8 @@ function NatsClient._flusher(self)
     end
 end
 
----@param self NatsClient class instance
----@param future userdata fiber.channel
+---@param self NatsClient @class instance
+---@param future userdata @fiber.channel
 ---@return void
 function NatsClient._send_ping(self, future)
     assert(self._transport, 'must be called only from Client.new')
@@ -415,8 +458,8 @@ function NatsClient._send_ping(self, future)
     end
 end
 
----@param self NatsClient class instance
----@param timeout number wait timeout
+---@param self NatsClient @class instance
+---@param timeout number @wait timeout
 ---@return void
 function NatsClient.flush(self, timeout)
     timeout = timeout or self._params.flush_timeout
@@ -439,9 +482,9 @@ end
 
 -- commands --
 
----@param self NatsClient class instance
----@param cmd string command
----@param priority boolean whether to send the command first
+---@param self NatsClient @class instance
+---@param cmd string @command
+---@param priority boolean @whether to send the command first
 ---@return void
 function NatsClient._send_command(self, cmd, priority)
     local cmd_t = {self._pending, cmd}
@@ -455,12 +498,12 @@ function NatsClient._send_command(self, cmd, priority)
     end
 end
 
----@param self NatsClient class instance
----@param subject string subject of dispatch
----@param reply string subject of receiving the response
----@param payload string message
----@param payload_size number size message
----@param headers table<string, string> headers
+---@param self NatsClient @class instance
+---@param subject string @subject of dispatch
+---@param reply string @subject of receiving the response
+---@param payload string @message
+---@param payload_size number @size message
+---@param headers table<string, string> @headers
 ---@return void
 function NatsClient._send_publish(self, subject, reply, payload, payload_size, headers)
     if subject == '' then
@@ -480,11 +523,11 @@ function NatsClient._send_publish(self, subject, reply, payload, payload_size, h
     end
 end
 
----@param self NatsClient class instance
----@param subject string subject of dispatch
----@param reply string subject of receiving the response
----@param payload string message
----@param headers table<string, string> headers
+---@param self NatsClient @class instance
+---@param subject string @subject of dispatch
+---@param reply string @subject of receiving the response
+---@param payload string @message
+---@param headers table<string, string> @headers
 ---@return void
 function NatsClient.publish(self, subject, payload, reply, headers)
     if self:is_closed() then
@@ -505,8 +548,8 @@ function NatsClient.publish(self, subject, payload, reply, headers)
     self:_send_publish(subject, reply, payload, payload_size, headers)
 end
 
----@param self NatsClient class instance
----@param sid number subscription id
+---@param self NatsClient @class instance
+---@param sid number @subscription id
 ---@return void
 function NatsClient._remove_sub(self, sid)
     self._subs[tostring(sid)] = nil
@@ -520,14 +563,14 @@ function NatsClient._send_subscribe(self, subscription)
     self:_flush_pending()
 end
 
----@param self NatsClient class instance
----@param subject string subscription subject
----@param queue string|nil subscription queue
----@param cb function|nil callback function
----@param max_msgs number|nil maximum number of messages expected from a subscription
----@param pending_msgs_limit number|nil maximum number of messages in the handler queue
----@param pending_bytes_limit number|nil maximum number of bytes in the handler queue
----@return Subscription class instance
+---@param self NatsClient @class instance
+---@param subject string @subscription subject
+---@param queue string|nil @subscription queue
+---@param cb function|nil @callback function
+---@param max_msgs number|nil @maximum number of messages expected from a subscription
+---@param pending_msgs_limit number|nil @maximum number of messages in the handler queue
+---@param pending_bytes_limit number|nil @maximum number of bytes in the handler queue
+---@return Subscription @class instance
 function NatsClient.subscribe(self, subject, queue, cb, max_msgs, pending_msgs_limit, pending_bytes_limit)
     if subject == nil or string.find(subject, ' ') ~= nil then
         error(NatsErrorEnum.bad_subject)
@@ -550,22 +593,22 @@ function NatsClient.subscribe(self, subject, queue, cb, max_msgs, pending_msgs_l
     return sub
 end
 
----@param self NatsClient class instance
----@param sid number subscription id
----@param limit number number of messages expected from subscription
+---@param self NatsClient @class instance
+---@param sid number @subscription id
+---@param limit number @number of messages expected from subscription
 ---@return void
 function NatsClient._send_unsubscribe(self, sid, limit)
     self:_send_command(self._command:unsubscribe(sid, limit))
     self:_flush_pending()
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return string
 function NatsClient.new_inbox(self)
     return table.concat({ self._params.inbox_prefix, self._nuid:next() }, '.')
 end
 
----@param msg Message returned message
+---@param msg Message @returned message
 ---@return void
 function NatsClient._request_sub_callback(msg)
     local future = msg._client._resp_map[msg.subject]
@@ -575,11 +618,11 @@ function NatsClient._request_sub_callback(msg)
     future:put(msg)
 end
 
----@param self NatsClient class instance
----@param subject string subject from which the message came
----@param payload string message payload
----@param headers table<string, string>|nil message headers
----@param timeout number|nil response timeout
+---@param self NatsClient @class instance
+---@param subject string @subject from which the message came
+---@param payload string @message payload
+---@param headers table<string, string>|nil @message headers
+---@param timeout number|nil @response timeout
 ---@return Message
 function NatsClient._request(self, subject, payload, headers, timeout)
     if self:is_draining_pubs() then
@@ -598,11 +641,11 @@ function NatsClient._request(self, subject, payload, headers, timeout)
     return result
 end
 
----@param self NatsClient class instance
----@param subject string subject from which the message came
----@param payload string message payload
----@param headers table<string, string>|nil message headers
----@param timeout number|nil response timeout
+---@param self NatsClient @class instance
+---@param subject string @subject from which the message came
+---@param payload string @message payload
+---@param headers table<string, string>|nil @message headers
+---@param timeout number|nil @response timeout
 ---@return Message
 function NatsClient.request(self, subject, payload, headers, timeout)
     timeout = timeout or 0.5
@@ -613,9 +656,9 @@ end
 
 -- processes --
 
----@param self NatsClient class instance
----@param info_string string json string with server information
----@param initial_connection boolean is this the first attempt to connect
+---@param self NatsClient @class instance
+---@param info_string string @json string with server information
+---@param initial_connection boolean @is this the first attempt to connect
 ---@return void
 function NatsClient._process_info(self, info_string, initial_connection)
     assert(self._current_server, "Client.new must be called first")
@@ -657,7 +700,7 @@ function NatsClient._process_info(self, info_string, initial_connection)
     end
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return void
 function NatsClient._attempt_reconnect(self)
     assert(self._current_server, 'must be called only from Client.new')
@@ -755,14 +798,14 @@ function NatsClient._attempt_reconnect(self)
     self._reconnection_task_future:join()
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return void
 function NatsClient._process_disconnect(self)
     self._status = NatsClientStatus.disconnected
 end
 
----@param self NatsClient class instance
----@param err Error error message
+---@param self NatsClient @class instance
+---@param err Error @error message
 ---@return void
 function NatsClient._process_op_err(self, err)
     if self:is_connecting() or self:is_closed() or self:is_reconnecting() then
@@ -782,7 +825,7 @@ function NatsClient._process_op_err(self, err)
     end
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return void
 function NatsClient._process_connect_init(self)
     assert(self._transport, 'must be called only from Client.new')
@@ -862,7 +905,7 @@ function NatsClient._process_connect_init(self)
     self._flusher_task = fiber.new(self._flusher, self)
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return void
 function NatsClient._ping_interval(self)
     while true do
@@ -878,8 +921,8 @@ function NatsClient._ping_interval(self)
     end
 end
 
----@param self NatsClient class instance
----@param err Error error
+---@param self NatsClient @class instance
+---@param err Error @error
 ---@return void
 function NatsClient._process_err(self, err)
     self._error = err
@@ -896,14 +939,14 @@ function NatsClient._process_err(self, err)
     end
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return void
 function NatsClient._process_ping(self)
     self:_send_command(self._command:pong())
     self:_flush_pending()
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return void
 function NatsClient._process_pong(self)
     if #self._pongs > 0 then
@@ -916,8 +959,8 @@ function NatsClient._process_pong(self)
     end
 end
 
----@param self NatsClient class instance
----@param msg Message incoming message
+---@param self NatsClient @class instance
+---@param msg Message @incoming message
 ---@return void
 function NatsClient._process_in_message(self, msg)
     self.stats.in_msgs = self.stats.in_msgs + 1
@@ -942,8 +985,8 @@ function NatsClient._process_in_message(self, msg)
     sub._pending_queue:put(msg)
 end
 
----@param self NatsClient class instance
----@param msg table<string, string|number|table>
+---@param self NatsClient @class instance
+---@param msg table<string, string|number|table> @incoming message
 ---@return void
 function NatsClient._process_msg(self, msg)
     if msg.type == protocol.NatsProtocolConstants.ok then
@@ -968,7 +1011,7 @@ function NatsClient._process_msg(self, msg)
     end
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return void
 function NatsClient._read_loop(self)
     while true do
@@ -998,8 +1041,8 @@ end
 
 -- properties --
 
----@param self NatsClient class instance
----@return URI|nil connected server uri
+---@param self NatsClient @class instance
+---@return URI|nil @connected server uri
 function NatsClient.connected_url(self)
     if self._current_server ~= nil and self:is_connected() then
         return self._current_server.uri
@@ -1007,8 +1050,8 @@ function NatsClient.connected_url(self)
     return nil
 end
 
----@param self NatsClient class instance
----@return URI[] servers uri list
+---@param self NatsClient @class instance
+---@return URI[] @servers uri list
 function NatsClient.servers(self)
     local servers = {}
     for _, v in ipairs(self._server_pool) do
@@ -1017,8 +1060,8 @@ function NatsClient.servers(self)
     return servers
 end
 
----@param self NatsClient class instance
----@return URI[] servers uri list
+---@param self NatsClient @class instance
+---@return URI[] @servers uri list
 function NatsClient.discovered_servers(self)
     local servers = {}
     for _, v in ipairs(self._server_pool) do
@@ -1029,62 +1072,62 @@ function NatsClient.discovered_servers(self)
     return servers
 end
 
----@param self NatsClient class instance
----@return number|nil max payload which we received from the servers INFO
+---@param self NatsClient @class instance
+---@return number|nil @max payload which we received from the servers INFO
 function NatsClient.max_payload(self)
     return self._current_server.info.max_payload or nil
 end
 
----@param self NatsClient class instance
----@return number|nil client id which we received from the servers INFO
+---@param self NatsClient @class instance
+---@return number|nil @client id which we received from the servers INFO
 function NatsClient.client_id(self)
     return self._current_server.info.client_id or nil
 end
 
----@param self NatsClient class instance
----@return Error|nil last error which may have occurred
+---@param self NatsClient @class instance
+---@return Error|nil @last error which may have occurred
 function NatsClient.last_error(self)
     return self._error or nil
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return boolean
 function NatsClient.is_closed(self)
     return self._status == NatsClientStatus.closed
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return boolean
 function NatsClient.is_reconnecting(self)
     return self._status == NatsClientStatus.reconnecting
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return boolean
 function NatsClient.is_connected(self)
     return self._status == NatsClientStatus.connected
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return boolean
 function NatsClient.is_connecting(self)
     return self._status == NatsClientStatus.connecting
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return boolean
 function NatsClient.is_draining(self)
     return self._status == NatsClientStatus.draining_subs or self._status == NatsClientStatus.draining_pubs
 end
 
----@param self NatsClient class instance
+---@param self NatsClient @class instance
 ---@return boolean
 function NatsClient.is_draining_pubs(self)
     return self._status == NatsClientStatus.draining_pubs
 end
 
----@param self NatsClient class instance
----@return Version|nil the Version of the server to which the client is currently connected.
+---@param self NatsClient @class instance
+---@return Version|nil @the Version of the server to which the client is currently connected.
 function NatsClient.connected_server_version(self)
     if self._current_server and self._current_server.info then
         return self._current_server.info.version

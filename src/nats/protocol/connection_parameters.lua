@@ -6,41 +6,41 @@ local Result = require('nats.utils.result')
 local NatsErrorEnum = require('nats.utils.errors')
 
 
----@class NatsConnectionParameters
----@field public verbose boolean Turns on +OK protocol acknowledgements.
----@field public pedantic boolean Turns on additional strict format checking, e.g. for properly formed subjects.
----@field public tls_required boolean Indicates whether the client requires an SSL connection.
----@field public lang Version The implementation language of the client.
----@field public version Version The version of the client.
----@field public echo boolean If set to false, the server (version 1.2.0+) will not send originating messages from this connection to its own subscriptions. Clients should set this to false only for server supporting this feature, which is when proto in the INFO protocol is set to at least 1.
----@field public name string|void Client name.
----@field public auth_token string|void Client authorization token.
----@field public user string|void Connection username.
----@field public pass string|void Connection password.
----@field public protocol number|void Sending 0 (or absent) indicates client supports original protocol. Sending 1 indicates that the client supports dynamic reconfiguration of cluster topology changes by asynchronously receiving INFO messages with known servers it can reconnect to.
----@field public sig string|void In case the server has responded with a nonce on INFO, then a NATS client must use this field to reply with the signed nonce.
----@field public jwt string|void The JWT that identifies a user permissions and account.
----@field public no_responders boolean Enable quick replies for cases where a request is sent to a topic with no responders.
----@field public headers boolean Whether the client supports headers.
----@field public nkey string|void The public NKey to authenticate the client. This will be used to verify the signature (sig) against the nonce provided in the INFO message.
----@field public new fun(name:string|void, user:string|void, password:string|void, auth_token:string|void, jwt:string|void, nkey:string|void, echo:boolean|void, no_responders:boolean|void, verbose:boolean|void, pedantic:boolean|void, tls_required:boolean|void):NatsConnectionParameters returns an instance of the class
----@field public tostring fun():Result returns as json string
----@field public set_server_info_params fun(params:NatsServerInfo):Result sets server parameters
+---@class NatsConnectionParameters @class represents the connection parameters.
+---@field public verbose boolean @Turns on +OK protocol acknowledgements.
+---@field public pedantic boolean @Turns on additional strict format checking, e.g. for properly formed subjects.
+---@field public tls_required boolean @Indicates whether the client requires an SSL connection.
+---@field public lang Version @The implementation language of the client.
+---@field public version Version @The version of the client.
+---@field public echo boolean @If set to false, the server (version 1.2.0+) will not send originating messages from this connection to its own subscriptions. Clients should set this to false only for server supporting this feature, which is when proto in the INFO protocol is set to at least 1.
+---@field public name string|void @Client name.
+---@field public auth_token string|void @Client authorization token.
+---@field public user string|void @Connection username.
+---@field public pass string|void @Connection password.
+---@field public protocol number|void @Sending 0 (or absent) indicates client supports original protocol. Sending 1 indicates that the client supports dynamic reconfiguration of cluster topology changes by asynchronously receiving INFO messages with known servers it can reconnect to.
+---@field public sig string|void @In case the server has responded with a nonce on INFO, then a NATS client must use this field to reply with the signed nonce.
+---@field public jwt string|void @The JWT that identifies a user permissions and account.
+---@field public no_responders boolean @Enable quick replies for cases where a request is sent to a topic with no responders.
+---@field public headers boolean @Whether the client supports headers.
+---@field public nkey string|void @The public NKey to authenticate the client. This will be used to verify the signature (sig) against the nonce provided in the INFO message.
+---@field public new fun(name:string|void, user:string|void, password:string|void, auth_token:string|void, jwt:string|void, nkey:string|void, echo:boolean|void, no_responders:boolean|void, verbose:boolean|void, pedantic:boolean|void, tls_required:boolean|void):NatsConnectionParameters @returns an instance of the class
+---@field public tostring fun():Result @returns as json string
+---@field public set_server_info_params fun(params:NatsServerInfo):Result @sets server parameters
 local NatsConnectionParameters = {}
 NatsConnectionParameters.__index = NatsConnectionParameters
 
----@param name string|void Client name.
----@param user string|void Connection username.
----@param password string|void Connection password.
----@param auth_token string|void Client authorization token.
----@param jwt string|void The JWT that identifies a user permissions and account.
----@param nkey string|void The public NKey to authenticate the client.
----@param echo boolean|void If set to false, the server will not send originating messages from this connection to its own subscriptions.
----@param no_responders boolean|void Enable quick replies for cases where a request is sent to a topic with no responders.
----@param verbose boolean|void Turns on +OK protocol acknowledgements.
----@param pedantic boolean|void Turns on additional strict format checking, e.g. for properly formed subjects.
----@param tls_required boolean|void Indicates whether the client requires an SSL connection.
----@return NatsConnectionParameters instance class
+---@param name string|void @Client name.
+---@param user string|void @Connection username.
+---@param password string|void @Connection password.
+---@param auth_token string|void @Client authorization token.
+---@param jwt string|void @The JWT that identifies a user permissions and account.
+---@param nkey string|void @The public NKey to authenticate the client.
+---@param echo boolean|void @If set to false, the server will not send originating messages from this connection to its own subscriptions.
+---@param no_responders boolean|void @Enable quick replies for cases where a request is sent to a topic with no responders.
+---@param verbose boolean|void @Turns on +OK protocol acknowledgements.
+---@param pedantic boolean|void @Turns on additional strict format checking, e.g. for properly formed subjects.
+---@param tls_required boolean|void @Indicates whether the client requires an SSL connection.
+---@return NatsConnectionParameters @instance class
 function NatsConnectionParameters.new(name, user, password, auth_token, jwt, nkey, echo, no_responders, verbose, pedantic, tls_required)
     ---@type NatsConnectionParameters
     local self = setmetatable({}, NatsConnectionParameters)
@@ -69,8 +69,8 @@ function NatsConnectionParameters.new(name, user, password, auth_token, jwt, nke
     return self
 end
 
----@param self NatsConnectionParameters instance class
----@return Result where data json string for connect
+---@param self NatsConnectionParameters @instance class
+---@return Result @where data json string for connect
 function NatsConnectionParameters.tostring(self)
     local connection_t = {
         verbose = self.verbose,
@@ -107,9 +107,9 @@ function NatsConnectionParameters.tostring(self)
     return Result.new(json.encode(connection_t))
 end
 
----@param self NatsConnectionParameters instance class
----@param params NatsServerInfo instance class
----@return Result where data json string for connect
+---@param self NatsConnectionParameters @instance class
+---@param params NatsServerInfo @instance class
+---@return Result @where data json string for connect
 function NatsConnectionParameters.set_server_info_params(self, params)
     self.protocol = params.proto
     if self.protocol ~= 1 and not self.echo then

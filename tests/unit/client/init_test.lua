@@ -544,3 +544,516 @@ group.test_process_connect_init_server_returned_error = function(cg)
     t.assert_str_contains(err.message, NatsErrorEnum.parser_err.message)
     server:stop()
 end
+
+group.test_ping = function(cg)
+    local conn
+    local ping_count = 5
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        local pong = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(pong, NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        if conn.verbose then
+            sock:write(NatsProtocolConstants.ok .. NatsProtocolConstants.delimiter)
+        end
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        while ping_count > 0 do
+            ping = sock:read(NatsProtocolConstants.delimiter)
+            t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+            sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+            ping_count = ping_count - 1
+        end
+    end
+    local server = MockNatsServer.new('127.0.0.1', 4223, cg.server_info, connect_cb)
+    server:start()
+    fiber.yield()
+    local nc = cg.module.new('nats://127.0.0.1:4223', { ping_interval = 1 })
+    fiber.yield()
+    t.assert_equals(nc._current_server.info.server_id, cg.server_info.server_id)
+    t.assert_equals(nc._current_server.info.server_name, cg.server_info.server_name)
+    t.assert_equals(nc._current_server.info.version:tostring(), cg.server_info.version)
+    t.assert_equals(nc._current_server.info.proto, cg.server_info.proto)
+    t.assert_equals(nc._current_server.info.proto, conn.protocol)
+    t.assert_equals(nc._current_server.info.git_commit, cg.server_info.git_commit)
+    t.assert_equals('go' .. nc._current_server.info.go:tostring(), cg.server_info.go)
+    t.assert_equals(nc._current_server.info.headers, cg.server_info.headers)
+    t.assert_equals(nc._current_server.info.headers, conn.headers)
+    t.assert_equals(nc._current_server.info.max_payload, cg.server_info.max_payload)
+    t.assert_equals(nc._current_server.info.client_id, cg.server_info.client_id)
+    t.assert_equals(nc._current_server.info.xkey, cg.server_info.xkey)
+    t.assert_equals(nc._current_server.info.host, '127.0.0.1')
+    t.assert_equals(nc._current_server.info.port, 4223)
+    t.assert_equals(nc._current_server.info.client_ip, '127.0.0.1')
+    local start = fiber.clock()
+    while ping_count > 0 and fiber.clock() - start < 10 do
+        fiber.yield()
+    end
+    nc:close()
+    server:stop()
+    t.assert_equals(0, ping_count)
+end
+
+group.test_pong = function(cg)
+    local conn
+    local pong_count = 5
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        local pong = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(pong, NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        if conn.verbose then
+            sock:write(NatsProtocolConstants.ok .. NatsProtocolConstants.delimiter)
+        end
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        while pong_count > 0 do
+            sock:write(NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+            pong = sock:read(NatsProtocolConstants.delimiter)
+            t.assert_equals(pong, NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+            pong_count = pong_count - 1
+            fiber.sleep(0.5)
+        end
+    end
+    local server = MockNatsServer.new('127.0.0.1', 4223, cg.server_info, connect_cb)
+    server:start()
+    fiber.yield()
+    local nc = cg.module.new('nats://127.0.0.1:4223')
+    fiber.yield()
+    t.assert_equals(nc._current_server.info.server_id, cg.server_info.server_id)
+    t.assert_equals(nc._current_server.info.server_name, cg.server_info.server_name)
+    t.assert_equals(nc._current_server.info.version:tostring(), cg.server_info.version)
+    t.assert_equals(nc._current_server.info.proto, cg.server_info.proto)
+    t.assert_equals(nc._current_server.info.proto, conn.protocol)
+    t.assert_equals(nc._current_server.info.git_commit, cg.server_info.git_commit)
+    t.assert_equals('go' .. nc._current_server.info.go:tostring(), cg.server_info.go)
+    t.assert_equals(nc._current_server.info.headers, cg.server_info.headers)
+    t.assert_equals(nc._current_server.info.headers, conn.headers)
+    t.assert_equals(nc._current_server.info.max_payload, cg.server_info.max_payload)
+    t.assert_equals(nc._current_server.info.client_id, cg.server_info.client_id)
+    t.assert_equals(nc._current_server.info.xkey, cg.server_info.xkey)
+    t.assert_equals(nc._current_server.info.host, '127.0.0.1')
+    t.assert_equals(nc._current_server.info.port, 4223)
+    t.assert_equals(nc._current_server.info.client_ip, '127.0.0.1')
+    local start = fiber.clock()
+    while pong_count > 0 and fiber.clock() - start < 10 do
+        fiber.yield()
+    end
+    nc:close()
+    server:stop()
+    t.assert_equals(0, pong_count)
+end
+
+group.test_publish_without_reply_without_headers = function(cg)
+    local conn, msg
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        local pong = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(pong, NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        if conn.verbose then
+            sock:write(NatsProtocolConstants.ok .. NatsProtocolConstants.delimiter)
+        end
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        msg = sock:read(NatsProtocolConstants.delimiter)
+        msg = msg .. sock:read(NatsProtocolConstants.delimiter)
+    end
+    local server = MockNatsServer.new('127.0.0.1', 4223, cg.server_info, connect_cb)
+    server:start()
+    fiber.yield()
+    local nc = cg.module.new('nats://127.0.0.1:4223')
+    fiber.yield()
+    nc:publish('foo', 'bar')
+    fiber.yield()
+    t.assert_equals(nc.stats.out_msgs, 1)
+    t.assert_equals(nc.stats.out_bytes, 3)
+    nc:close()
+    server:stop()
+    t.assert_equals(msg, 'PUB foo 3\r\nbar\r\n')
+end
+
+group.test_publish_with_reply_without_headers = function(cg)
+    local conn, msg
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        local pong = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(pong, NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        if conn.verbose then
+            sock:write(NatsProtocolConstants.ok .. NatsProtocolConstants.delimiter)
+        end
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        msg = sock:read(NatsProtocolConstants.delimiter)
+        msg = msg .. sock:read(NatsProtocolConstants.delimiter)
+    end
+    local server = MockNatsServer.new('127.0.0.1', 4223, cg.server_info, connect_cb)
+    server:start()
+    fiber.yield()
+    local nc = cg.module.new('nats://127.0.0.1:4223')
+    fiber.yield()
+    nc:publish('foo', 'bar', 'baz')
+    fiber.yield()
+    t.assert_equals(nc.stats.out_msgs, 1)
+    t.assert_equals(nc.stats.out_bytes, 3)
+    nc:close()
+    server:stop()
+    t.assert_equals(msg, 'PUB foo baz 3\r\nbar\r\n')
+end
+
+group.test_publish_without_reply_with_headers = function(cg)
+    local conn, msg
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        local pong = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(pong, NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        if conn.verbose then
+            sock:write(NatsProtocolConstants.ok .. NatsProtocolConstants.delimiter)
+        end
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        msg = sock:read(NatsProtocolConstants.delimiter)
+        msg = msg .. sock:read(NatsProtocolConstants.delimiter)
+        msg = msg .. sock:read(NatsProtocolConstants.delimiter)
+        msg = msg .. sock:read(NatsProtocolConstants.delimiter)
+        msg = msg .. sock:read(NatsProtocolConstants.delimiter)
+    end
+    local server = MockNatsServer.new('127.0.0.1', 4223, cg.server_info, connect_cb)
+    server:start()
+    fiber.yield()
+    local nc = cg.module.new('nats://127.0.0.1:4223')
+    fiber.yield()
+    nc:publish('foo', 'bar', nil, {foo = 'bar'})
+    fiber.yield()
+    t.assert_equals(nc.stats.out_msgs, 1)
+    t.assert_equals(nc.stats.out_bytes, 3)
+    nc:close()
+    server:stop()
+    t.assert_equals(msg, 'HPUB foo 22 25\r\nNATS/1.0\r\nfoo: bar\r\n\r\nbar\r\n')
+end
+
+group.test_publish_with_reply_with_headers = function(cg)
+    local conn, msg
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        local pong = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(pong, NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        if conn.verbose then
+            sock:write(NatsProtocolConstants.ok .. NatsProtocolConstants.delimiter)
+        end
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        msg = sock:read(NatsProtocolConstants.delimiter)
+        msg = msg .. sock:read(NatsProtocolConstants.delimiter)
+        msg = msg .. sock:read(NatsProtocolConstants.delimiter)
+        msg = msg .. sock:read(NatsProtocolConstants.delimiter)
+        msg = msg .. sock:read(NatsProtocolConstants.delimiter)
+    end
+    local server = MockNatsServer.new('127.0.0.1', 4223, cg.server_info, connect_cb)
+    server:start()
+    fiber.yield()
+    local nc = cg.module.new('nats://127.0.0.1:4223')
+    fiber.yield()
+    nc:publish('foo', 'bar', 'baz', {foo = 'bar'})
+    fiber.yield()
+    t.assert_equals(nc.stats.out_msgs, 1)
+    t.assert_equals(nc.stats.out_bytes, 3)
+    nc:close()
+    server:stop()
+    t.assert_equals(msg, 'HPUB foo baz 22 25\r\nNATS/1.0\r\nfoo: bar\r\n\r\nbar\r\n')
+end
+
+group.test_subscribe_without_queue = function(cg)
+    local conn, msg_sub, msg_unsub
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        local pong = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(pong, NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        if conn.verbose then
+            sock:write(NatsProtocolConstants.ok .. NatsProtocolConstants.delimiter)
+        end
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        msg_sub = sock:read(NatsProtocolConstants.delimiter)
+        while true do
+            local msg = sock:read(NatsProtocolConstants.delimiter)
+            if msg == nil or msg == '' then
+                break
+            end
+            if string.startswith(msg, NatsProtocolConstants.unsub) then
+                msg_unsub = msg
+            elseif string.startswith(msg, NatsProtocolConstants.ping) then
+                sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+            end
+        end
+    end
+    local server = MockNatsServer.new('127.0.0.1', 4223, cg.server_info, connect_cb)
+    server:start()
+    fiber.yield()
+    local nc = cg.module.new('nats://127.0.0.1:4223')
+    fiber.yield()
+    nc:subscribe('foo')
+    fiber.yield()
+    local sub_count = 0
+    for _, _ in pairs(nc._subs) do
+        sub_count = sub_count + 1
+    end
+    t.assert_equals(sub_count, 1)
+    nc:close()
+    sub_count = 0
+    for _, _ in pairs(nc._subs) do
+        sub_count = sub_count + 1
+    end
+    t.assert_equals(sub_count, 0)
+    server:stop()
+    t.assert_equals(msg_sub, 'SUB foo 1\r\n')
+    t.assert_equals(msg_unsub, 'UNSUB 1\r\n')
+end
+
+group.test_subscribe_with_queue = function(cg)
+    local conn, msg_sub, msg_unsub
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        local pong = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(pong, NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        if conn.verbose then
+            sock:write(NatsProtocolConstants.ok .. NatsProtocolConstants.delimiter)
+        end
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        msg_sub = sock:read(NatsProtocolConstants.delimiter)
+        while true do
+            local msg = sock:read(NatsProtocolConstants.delimiter)
+            if msg == nil or msg == '' then
+                break
+            end
+            if string.startswith(msg, NatsProtocolConstants.unsub) then
+                msg_unsub = msg
+            elseif string.startswith(msg, NatsProtocolConstants.ping) then
+                sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+            end
+        end
+    end
+    local server = MockNatsServer.new('127.0.0.1', 4223, cg.server_info, connect_cb)
+    server:start()
+    fiber.yield()
+    local nc = cg.module.new('nats://127.0.0.1:4223')
+    fiber.yield()
+    nc:subscribe('foo', 'bar')
+    fiber.yield()
+    local sub_count = 0
+    for _, _ in pairs(nc._subs) do
+        sub_count = sub_count + 1
+    end
+    t.assert_equals(sub_count, 1)
+    nc:close()
+    sub_count = 0
+    for _, _ in pairs(nc._subs) do
+        sub_count = sub_count + 1
+    end
+    t.assert_equals(sub_count, 0)
+    server:stop()
+    t.assert_equals(msg_sub, 'SUB foo bar 1\r\n')
+    t.assert_equals(msg_unsub, 'UNSUB 1\r\n')
+end
+
+group.test_unsubscribe_without_limit = function(cg)
+    local conn, msg_sub, msg_unsub
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        local pong = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(pong, NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        if conn.verbose then
+            sock:write(NatsProtocolConstants.ok .. NatsProtocolConstants.delimiter)
+        end
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        msg_sub = sock:read(NatsProtocolConstants.delimiter)
+        while true do
+            local msg = sock:read(NatsProtocolConstants.delimiter)
+            if msg == nil or msg == '' then
+                break
+            end
+            if string.startswith(msg, NatsProtocolConstants.unsub) then
+                msg_unsub = msg
+            elseif string.startswith(msg, NatsProtocolConstants.ping) then
+                sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+            end
+        end
+    end
+    local server = MockNatsServer.new('127.0.0.1', 4223, cg.server_info, connect_cb)
+    server:start()
+    fiber.yield()
+    local nc = cg.module.new('nats://127.0.0.1:4223')
+    fiber.yield()
+    local sub = nc:subscribe('foo', 'bar')
+    fiber.yield()
+    local sub_count = 0
+    for _, _ in pairs(nc._subs) do
+        sub_count = sub_count + 1
+    end
+    t.assert_equals(sub_count, 1)
+    sub:unsubscribe()
+    fiber.sleep(0.5)
+    sub_count = 0
+    for _, _ in pairs(nc._subs) do
+        sub_count = sub_count + 1
+    end
+    t.assert_equals(sub_count, 0)
+    nc:close()
+    server:stop()
+    t.assert_equals(msg_sub, 'SUB foo bar 1\r\n')
+    t.assert_equals(msg_unsub, 'UNSUB 1 0\r\n')
+end
+
+group.test_unsubscribe_with_limit = function(cg)
+    local conn, msg_sub, msg_unsub
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        local pong = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(pong, NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        if conn.verbose then
+            sock:write(NatsProtocolConstants.ok .. NatsProtocolConstants.delimiter)
+        end
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        msg_sub = sock:read(NatsProtocolConstants.delimiter)
+        while true do
+            local msg = sock:read(NatsProtocolConstants.delimiter)
+            if msg == nil or msg == '' then
+                break
+            end
+            if string.startswith(msg, NatsProtocolConstants.unsub) then
+                msg_unsub = msg
+            elseif string.startswith(msg, NatsProtocolConstants.ping) then
+                sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+            end
+        end
+    end
+    local server = MockNatsServer.new('127.0.0.1', 4223, cg.server_info, connect_cb)
+    server:start()
+    fiber.yield()
+    local nc = cg.module.new('nats://127.0.0.1:4223')
+    fiber.yield()
+    local sub = nc:subscribe('foo', 'bar')
+    fiber.yield()
+    local sub_count = 0
+    for _, _ in pairs(nc._subs) do
+        sub_count = sub_count + 1
+    end
+    t.assert_equals(sub_count, 1)
+    sub:unsubscribe(10)
+    fiber.sleep(0.5)
+    t.assert_equals(msg_unsub, 'UNSUB 1 10\r\n')
+    sub_count = 0
+    for _, _ in pairs(nc._subs) do
+        sub_count = sub_count + 1
+    end
+    t.assert_equals(sub_count, 1)
+    nc:close()
+    sub_count = 0
+    for _, _ in pairs(nc._subs) do
+        sub_count = sub_count + 1
+    end
+    t.assert_equals(sub_count, 0)
+    server:stop()
+    t.assert_equals(msg_sub, 'SUB foo bar 1\r\n')
+    t.assert_equals(msg_unsub, 'UNSUB 1\r\n')
+end
+
+group.test_new_inbox = function(cg)
+    local conn
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        local pong = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(pong, NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        if conn.verbose then
+            sock:write(NatsProtocolConstants.ok .. NatsProtocolConstants.delimiter)
+        end
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+    end
+    local server = MockNatsServer.new('127.0.0.1', 4223, cg.server_info, connect_cb)
+    server:start()
+    fiber.yield()
+    local nc = cg.module.new('nats://127.0.0.1:4223')
+    fiber.yield()
+    for _ = 1, 100, 1 do
+        t.assert_not_equals(nc:new_inbox(), nc:new_inbox())
+    end
+    t.assert_str_contains(nc:new_inbox(), nc._params.inbox_prefix .. '.')
+end

@@ -4,34 +4,34 @@ local Result = require('nats.utils.result')
 local NatsErrorEnum = require('nats.utils.errors')
 
 
----@class NatsClientOptions
----@field private _validate_result Result Result validation
----@field public error_cb function Callback to report errors
----@field public disconnected_cb function|nil Callback to report disconnection from NATS
----@field public closed_cb function|nil Callback to report when client stops reconnection to NATS
----@field public discovered_server_cb function|nil Callback to report when a new server joins the cluster
----@field public reconnected_cb function|nil Callback to report when client reconnected to server
----@field public name string|nil Label the connection with name (shown in NATS monitoring)
----@field public pedantic boolean Turns on additional strict format checking, e.g. for properly formed subjects
----@field public verbose boolean Turns on +OK protocol acknowledgements
----@field public allow_reconnect boolean Ability to reconnect to servers
----@field public connect_timeout number Server connection timeout
----@field public reconnect_time_wait number Wait time between reconnects
----@field public max_reconnect_attempts number Maximum number of reconnection attempts
----@field public ping_interval number Interval between sending pings to the server
----@field public max_outstanding_pings number Maximum number of failed pings
----@field public dont_randomize boolean Do not mix servers in the pool
----@field public no_echo boolean Disabling the echo parameter
----@field public user string|nil User to connect to the server
----@field public password string|nil Password to connect to the server
----@field public drain_timeout number Waiting for a graceful disconnect from the server
----@field public inbox_prefix string Prefix for random topics
----@field public pending_size number Max size of the pending buffer for publishing commands
----@field public flush_timeout number Timeout for flushing pending buffer
----@field public flusher_queue_size number Size of the flusher queue
----@field private _validate fun(self: NatsClientOptions, options: table<string, any>|nil): void Validate options
----@field private _merge fun(self: NatsClientOptions): void Merge options and defaults
----@field public new fun(self: NatsClientOptions, options: table<string, any>|nil): Result Create a new instance of NatsClientOptions
+---@class NatsClientOptions @class for NATS client options
+---@field private _validate_result Result @Result validation
+---@field public error_cb function @Callback to report errors
+---@field public disconnected_cb function|nil @Callback to report disconnection from NATS
+---@field public closed_cb function|nil @Callback to report when client stops reconnection to NATS
+---@field public discovered_server_cb function|nil @Callback to report when a new server joins the cluster
+---@field public reconnected_cb function|nil @Callback to report when client reconnected to server
+---@field public name string|nil @Label the connection with name (shown in NATS monitoring)
+---@field public pedantic boolean @Turns on additional strict format checking, e.g. for properly formed subjects
+---@field public verbose boolean @Turns on +OK protocol acknowledgements
+---@field public allow_reconnect boolean @Ability to reconnect to servers
+---@field public connect_timeout number @Server connection timeout
+---@field public reconnect_time_wait number @Wait time between reconnects
+---@field public max_reconnect_attempts number @Maximum number of reconnection attempts
+---@field public ping_interval number @Interval between sending pings to the server
+---@field public max_outstanding_pings number @Maximum number of failed pings
+---@field public dont_randomize boolean @Do not mix servers in the pool
+---@field public no_echo boolean @Disabling the echo parameter
+---@field public user string|nil @User to connect to the server
+---@field public password string|nil @Password to connect to the server
+---@field public drain_timeout number @Waiting for a graceful disconnect from the server
+---@field public inbox_prefix string @Prefix for random topics
+---@field public pending_size number @Max size of the pending buffer for publishing commands
+---@field public flush_timeout number @Timeout for flushing pending buffer
+---@field public flusher_queue_size number @Size of the flusher queue
+---@field private _validate fun(self: NatsClientOptions, options: table<string, any>|nil): void @Validate options
+---@field private _merge fun(self: NatsClientOptions): void @Merge options and defaults
+---@field public new fun(self: NatsClientOptions, options: table<string, any>|nil): Result @Create a new instance of NatsClientOptions
 local NatsClientOptions = {
     error_cb = function(err)
         if type(err) == 'table' then
@@ -58,7 +58,7 @@ local NatsClientOptions = {
 }
 NatsClientOptions.__index = NatsClientOptions
 
----@param options table<string, any>|nil Options
+---@param options table<string, any>|nil @Options
 ---@return Result
 function NatsClientOptions.new(options)
     local self = setmetatable({}, NatsClientOptions)
@@ -70,8 +70,8 @@ function NatsClientOptions.new(options)
     return Result.new(self)
 end
 
----@param self NatsClientOptions instance class
----@param options table<string, any> options
+---@param self NatsClientOptions @instance class
+---@param options table<string, any> @options
 ---@return void
 function NatsClientOptions._validate(self, options)
     if options == nil then
@@ -225,7 +225,7 @@ function NatsClientOptions._validate(self, options)
     end
 end
 
----@param self NatsClientOptions instance class
+---@param self NatsClientOptions @instance class
 ---@return void
 function NatsClientOptions._merge(self)
     for key, value in pairs(self._validate_result.data) do

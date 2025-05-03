@@ -1,12 +1,12 @@
----@class Version the class is a version formed from a string
----@field public prefix string version prefix (can only be "v")
----@field public major number major version
----@field public minor number minor version
----@field public patch number patch version
----@field public pre_release number|nil pre-release version
----@field public hash string|nil commit hash
----@field public new fun(version:string):Version returns an instance of the class
----@field public tostring fun():string returns the version as a string
+---@class Version @the class is a version formed from a string
+---@field public prefix string @version prefix (can only be "v")
+---@field public major number @major version
+---@field public minor number @minor version
+---@field public patch number @patch version
+---@field public pre_release number|nil @pre-release version
+---@field public hash string|nil @commit hash
+---@field public new fun(version:string):Version @returns an instance of the class
+---@field public tostring fun():string @returns the version as a string
 local Version = {
     prefix = '',
     major = 0,
@@ -15,8 +15,8 @@ local Version = {
 }
 Version.__index = Version
 
----@param version string string version
----@return Version # instance of class Version
+---@param version string @string version
+---@return Version @instance of class Version
 function Version.new(version)
     local self = setmetatable({}, Version)
     local prefix, major, minor, patch, dev = string.match(version, '^(v?)(%d+)%.(%d+)%.(%d+)(%-?[%w%-%.]*)')
@@ -36,8 +36,8 @@ function Version.new(version)
     return self
 end
 
----@param self Version instance of class Version
----@return string # string version
+---@param self Version @instance of class Version
+---@return string @string version
 function Version.tostring(self)
     local suffix = ''
     if self.pre_release and self.hash then

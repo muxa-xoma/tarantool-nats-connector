@@ -2,7 +2,7 @@ local Result = require('nats.utils.result.init')
 local NatsProtocolConstants = require('nats.protocol.constants')
 local NatsErrorEnum = require('nats.utils.errors')
 
----@class NatsParserStatesEnum: table
+---@class NatsParserStatesEnum: enum
 ---@field public awaiting_control_line
 ---@field public awaiting_msg_headers
 ---@field public awaiting_msg_payload
@@ -16,28 +16,28 @@ local NatsParserStatesEnum = {
     error_reading_data = 5
 }
 
----@class NatsParser class that represents a parser of messages from the nats server
----@field private _buffer string message buffer being processed
----@field private _state NatsParserStatesEnum
----@field private _msg table < string, string|number >
----@field private _reset function resets class
----@field private _parse_control_msg function recognizes the control line of the message
----@field private _parse_msg_headers function recognizes message headers
----@field public new fun():NatsParser returns an instance of the class
----@field public parse fun(data:string):Result returns the recognized message
----@field public error_parse fun(err_string:string):NatsErrorEnum return recognized error
+---@class NatsParser @class that represents a parser of messages from the nats server
+---@field private _buffer string @message buffer being processed
+---@field private _state NatsParserStatesEnum @current state of the parser
+---@field private _msg table < string, string|number > @message being processed
+---@field private _reset function @resets class
+---@field private _parse_control_msg function @recognizes the control line of the message
+---@field private _parse_msg_headers function @recognizes message headers
+---@field public new fun():NatsParser @returns an instance of the class
+---@field public parse fun(data:string):Result @returns the recognized message
+---@field public error_parse fun(err_string:string):NatsErrorEnum @return recognized error
 local NatsParser = {}
 NatsParser.__index = NatsParser
 
 
----@return NatsParser class instance
+---@return NatsParser @class instance
 function NatsParser.new()
     local self = setmetatable({}, NatsParser)
     self:_reset()
     return self
 end
 
----@param self NatsParser class instance
+---@param self NatsParser @class instance
 ---@return void
 function NatsParser._reset(self)
     self._buffer = ''
@@ -46,8 +46,8 @@ function NatsParser._reset(self)
     self._msg = {}
 end
 
----@param self NatsParser class instance
----@param control_line string command message line
+---@param self NatsParser @class instance
+---@param control_line string @command message line
 ---@return void
 function NatsParser._parse_control_msg(self, control_line)
     local slices  = {}
@@ -96,8 +96,8 @@ function NatsParser._parse_control_msg(self, control_line)
     end
 end
 
----@param self NatsParser class instance
----@param headers_s string headers in string format
+---@param self NatsParser @class instance
+---@param headers_s string @headers in string format
 ---@return void
 function NatsParser._parse_msg_headers(self, headers_s)
     local slices = {}
@@ -116,8 +116,8 @@ function NatsParser._parse_msg_headers(self, headers_s)
     end
 end
 
----@param self NatsParser class instance
----@param data string subtracted data
+---@param self NatsParser @class instance
+---@param data string @subtracted data
 ---@return Result
 function NatsParser.parse(self, data)
     self._buffer = self._buffer .. data
@@ -150,8 +150,8 @@ function NatsParser.parse(self, data)
     end
 end
 
----@param err_string string the error text that the server returned
----@return Error recognized error
+---@param err_string string @the error text that the server returned
+---@return Error @recognized error
 function NatsParser.error_parse(err_string)
     local err
     if err_string == "'Unknown Protocol Operation'" then

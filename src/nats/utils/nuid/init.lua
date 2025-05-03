@@ -18,19 +18,19 @@ constants.BASE = #constants.DIGITS
 constants.INC = constants.MAX_INC - constants.MIN_INC
 constants.TOTAL_LENGTH = constants.PREFIX_LENGTH + constants.SEQ_LENGTH
 
----@class Nuid class generating random strings
----@field private _seq number random sequence
----@field private _inc number random increment
----@field private _prefix string random prefix
----@field private _randomize_prefix function generates random prefix
----@field private _reset_sequential function resets sequences
----@field public new fun():Nuid returns an instance of the class
----@field public next fun():string returns random string
+---@class Nuid @class generating random strings
+---@field private _seq number @random sequence
+---@field private _inc number @random increment
+---@field private _prefix string @random prefix
+---@field private _randomize_prefix function @generates random prefix
+---@field private _reset_sequential function @resets sequences
+---@field public new fun():Nuid @returns an instance of the class
+---@field public next fun():string @returns random string
 local Nuid = {}
 Nuid.__index = Nuid
 
 
----@return Nuid # instance of class Nuid
+---@return Nuid @instance of class Nuid
 function Nuid.new()
     local self = setmetatable({}, Nuid)
     self:_randomize_prefix()
@@ -38,8 +38,8 @@ function Nuid.new()
     return self
 end
 
----@param self Nuid instance of class Nuid
----@return nil
+---@param self Nuid @instance of class Nuid
+---@return void
 function Nuid._randomize_prefix(self)
     local tmp_t = {}
     for _ = 1, constants.PREFIX_LENGTH, 1 do
@@ -49,14 +49,14 @@ function Nuid._randomize_prefix(self)
     self._prefix = table.concat(tmp_t)
 end
 
----@param self Nuid instance of class Nuid
----@return nil
+---@param self Nuid @instance of class Nuid
+---@return void
 function Nuid._reset_sequential(self)
     self._seq = math.random(0, constants.MAX_SEQ)
     self._inc = constants.MIN_INC + math.random(0, constants.INC)
 end
 
----@param self Nuid instance of class Nuid
+---@param self Nuid @instance of class Nuid
 ---@return string
 function Nuid.next(self)
     self._seq = self._seq + self._inc

@@ -1,14 +1,14 @@
----@class Result a class representing the result of executing a function
----@field public success boolean
----@field public data any data returned by the function
----@field public error Error|nil the error that the function returned
----@field public new fun(data: any, err: Error|nil, add_err_text: string|nil):Result returns an instance of the class
+---@class Result @a class representing the result of executing a function
+---@field public success boolean @true if the function returned data, false if it returned an error
+---@field public data any @data returned by the function
+---@field public error Error|nil @the error that the function returned
+---@field public new fun(data: any, err: Error|nil, add_err_text: string|nil):Result @returns an instance of the class
 local Result = {}
 Result.__index = Result
 
----@param data any data returned by the function
----@param err Error|nil the error that the function returned
----@param add_err_text string|nil text added to the error text
+---@param data any @data returned by the function
+---@param err Error|nil @the error that the function returned
+---@param add_err_text string|nil @text added to the error text
 function Result.new(data, err, add_err_text)
     local self = setmetatable({}, Result)
     if data then
