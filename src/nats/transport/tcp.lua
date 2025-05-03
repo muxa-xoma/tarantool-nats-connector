@@ -13,13 +13,13 @@ local NatsProtocolConstants = require('nats.protocol.constants')
 ---@field private _has_drain boolean socket is drain
 ---@field private _has_close boolean socket is close
 ---@field public new fun(host: string, port: number, timeout: number, msg_len: number):TCPTransport class constructor
----@field public connect fun():Result connects to socket
----@field public reconnect fun():Result reconnects to socket
----@field public write fun(payload: string):Result writes data to socket
----@field public read fun(len: number, timeout: number):Result reads data from socket
----@field public drain fun():Result blocks write until all data is written
----@field public close fun():Result stops the socket
----@field public health_check fun():Result returns false if the connection is closed, otherwise true
+---@field public connect fun(self: TCPTransport):Result connects to socket
+---@field public reconnect fun(self: TCPTransport):Result reconnects to socket
+---@field public write fun(self: TCPTransport,payload: string):Result writes data to socket
+---@field public read fun(self: TCPTransport,len: number, timeout: number):Result reads data from socket
+---@field public drain fun(self: TCPTransport):Result blocks write until all data is written
+---@field public close fun(self: TCPTransport):Result stops the socket
+---@field public health_check fun(self: TCPTransport):Result returns false if the connection is closed, otherwise true
 local TCPTransport = {}
 TCPTransport.__index = TCPTransport
 
@@ -74,6 +74,8 @@ function TCPTransport.read(self, len, timeout)
     local payload_s = self._socket:read({ chunk = len, delimiter = NatsProtocolConstants.delimiter }, timeout)
     if not payload_s then
         return Result.new(nil, NatsErrorEnum.tcp_transport, self._socket:error())
+    elseif payload_s == '' then
+        return Result.new(nil, NatsErrorEnum.tcp_transport, 'empty payload')
     end
     return Result.new(payload_s)
 end

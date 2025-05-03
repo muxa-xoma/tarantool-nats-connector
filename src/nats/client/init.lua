@@ -1,5 +1,6 @@
 local math = require('math')
 local fiber = require('fiber')
+local json = require('json')
 
 local NatsErrorEnum = require('nats.utils.errors')
 local Nuid = require('nats.utils.nuid')
@@ -55,6 +56,7 @@ local NatsClientStatus = {
 ---@field private _current_server NatsServer|nil current server
 ---
 ---@field private _setup_server_pool fun(servers:string|table):void setup server pool
+---@field private _shuffle_server_pool fun():void shuffle server pool
 ---@field private _setup_client_options fun(options:NatsConnectionParameters|nil):void setup client options
 ---@field private _select_next_server fun():void select next server in pool
 local NatsClient = {}
@@ -184,7 +186,22 @@ function NatsClient._setup_client_options(self, options)
         dont_randomize = options.dont_randomize
     }
     if #self._server_pool > 1 and not self._params.dont_randomize then
-        table.sort(self._server_pool, function (_, _) return math.random(1, 2) == 1 end)
+        self:_shuffle_server_pool()
+    end
+end
+
+---@param self NatsClient class instance
+---@return void
+function NatsClient._shuffle_server_pool(self)
+    local clone = table.deepcopy(self._server_pool)
+    for i = #clone, 2, -1 do
+        local j = math.random(1, i)
+        clone[i], clone[j] = clone[j], clone[i]
+    end
+    if json.encode(clone) == json.encode(self._server_pool) then
+        self:_shuffle_server_pool()
+    else
+        self._server_pool = clone
     end
 end
 
@@ -208,10 +225,8 @@ function NatsClient._select_next_server(self)
             fiber.sleep(self._params.reconnect_time_wait)
         end
         serv.last_attempt = fiber.clock()
-        if self._transport == nil then
-            -- TODO: Make a choice between TCP or WebSocket
-            self._transport = transport.TCPTransport.new(serv.uri.host, serv.uri.service, self._params.connect_timeout)
-        end
+        -- TODO: Make a choice between TCP or WebSocket
+        self._transport = transport.TCPTransport.new(serv.uri.host, tonumber(serv.uri.service), self._params.connect_timeout)
         -- TODO: tls connection
         local result = self._transport:connect()
         if result.success then
@@ -630,11 +645,11 @@ function NatsClient._process_info(self, info_string, initial_connection)
                 table.insert(connect_urls, serv)
             end
         end
-        if #connect_urls > 1 and not self._params.dont_randomize then
-            table.sort(connect_urls, function (_, _) return math.random(1, 2) == 1 end)
-        end
         for _, v in ipairs(connect_urls) do
             table.insert(self._server_pool, v)
+        end
+        if #self._server_pool > 1 and not self._params.dont_randomize then
+            self:_shuffle_server_pool()
         end
         if not initial_connection and connect_urls and self._cb.discovered_server_cb ~= nil then
             self._cb.discovered_server_cb()
@@ -668,8 +683,8 @@ function NatsClient._attempt_reconnect(self)
     if self:is_closed() then
         return
     end
-    if not self._params.dont_randomize then
-        table.sort(self._server_pool, function (_, _) return math.random(1, 2) == 1 end)
+    if #self._server_pool > 1 and not self._params.dont_randomize then
+        self:_shuffle_server_pool()
     end
     self._reconnection_task_future = fiber.new(
             function()
@@ -804,7 +819,10 @@ function NatsClient._process_connect_init(self)
     if not param.success then
         error(param.error)
     end
-    self._transport:write(self._command:connect(param.data))
+    local write_data = self._transport:write(self._command:connect(param.data))
+    if not write_data.success then
+        error(write_data.error)
+    end
     if self._connection_params.verbose then
         read_result = self._transport:read()
         if not read_result.success then
@@ -818,7 +836,10 @@ function NatsClient._process_connect_init(self)
             error(self._parser.error_parse(read_data.data.payload))
         end
     end
-    self._transport:write(self._command:ping())
+    write_data = self._transport:write(self._command:ping())
+    if not write_data.success then
+        error(write_data.error)
+    end
     read_result = self._transport:read()
     if not read_result.success then
         error(read_result.error)
@@ -831,6 +852,8 @@ function NatsClient._process_connect_init(self)
         self._status = NatsClientStatus.connected
     elseif read_data.data.type == protocol.NatsProtocolConstants.err then
         error(self._parser.error_parse(read_data.data.payload))
+    else
+        error(NatsErrorEnum.protocol)
     end
     self._reading_task = fiber.new(self._read_loop, self)
     self._pongs = {}

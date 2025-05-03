@@ -157,8 +157,8 @@ group.test_drain = function(cg)
     local response = con:drain()
     t.assert(response.success)
     local read = con:read(512, 1)
-    t.assert(read.success)
-    t.assert_equals(read.data, '')
+    t.assert_not(read.success)
+    t.assert_equals(read.error.message, 'TCP transport error: empty payload')
 end
 
 group.test_drain_false_is_drain = function(cg)

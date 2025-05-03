@@ -154,35 +154,35 @@ end
 ---@return Error recognized error
 function NatsParser.error_parse(err_string)
     local err
-    if err_string == 'Unknown Protocol Operation' then
+    if err_string == "'Unknown Protocol Operation'" then
         err = NatsErrorEnum.unk_protocol_err
-    elseif err_string == 'Attempted To Connect To Route Port' then
+    elseif err_string == "'Attempted To Connect To Route Port'" then
         err = NatsErrorEnum.con_route_port
-    elseif err_string == 'Authorization Violation' then
+    elseif err_string == "'Authorization Violation'" then
         err = NatsErrorEnum.authorization_violation
-    elseif err_string == 'Authorization Timeout' then
+    elseif err_string == "'Authorization Timeout'" then
         err = NatsErrorEnum.authorization_timeout
-    elseif err_string == 'Invalid Client Protocol' then
+    elseif err_string == "'Invalid Client Protocol'" then
         err = NatsErrorEnum.invalid_client_protocol
-    elseif err_string == 'Maximum Control Line Exceeded' then
+    elseif err_string == "'Maximum Control Line Exceeded'" then
         err = NatsErrorEnum.max_control_line
-    elseif err_string == 'Parser Error' then
+    elseif err_string == "'Parser Error'" then
         err = NatsErrorEnum.parser_err
-    elseif err_string == 'Secure Connection - TLS Required' then
+    elseif err_string == "'Secure Connection - TLS Required'" then
         err = NatsErrorEnum.tls_required
-    elseif err_string == 'Stale Connection' then
+    elseif err_string == "'Stale Connection'" then
         err = NatsErrorEnum.stale_connection_serv
-    elseif err_string == 'Maximum Connections Exceeded' then
+    elseif err_string == "'Maximum Connections Exceeded'" then
         err = NatsErrorEnum.max_connections
-    elseif err_string == 'Slow Consumer' then
+    elseif err_string == "'Slow Consumer'" then
         err = NatsErrorEnum.slow_consumer_serv
-    elseif err_string == 'Maximum Payload Violation' then
+    elseif err_string == "'Maximum Payload Violation'" then
         err = NatsErrorEnum.max_payload_serv
-    elseif err_string == 'Invalid Subject' then
+    elseif err_string == "'Invalid Subject'" then
         err = NatsErrorEnum.invalid_subject
-    elseif string.startswith(err_string, 'Permissions Violation for Subscription to') then
+    elseif string.startswith(err_string, "'Permissions Violation for Subscription to") then
         err = NatsErrorEnum.permission_read_subject
-    elseif string.startswith(err_string, 'Permissions Violation for Publish to') then
+    elseif string.startswith(err_string, "'Permissions Violation for Publish to") then
         err = NatsErrorEnum.permission_write_subject
     else
         err = NatsErrorEnum.unexpected_serv
