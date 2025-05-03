@@ -2,7 +2,7 @@
 ---@field public success boolean
 ---@field public data any data returned by the function
 ---@field public error Error|nil the error that the function returned
----@field public new function returns an instance of the class
+---@field public new fun(data: any, err: Error|nil, add_err_text: string|nil):Result returns an instance of the class
 local Result = {}
 Result.__index = Result
 

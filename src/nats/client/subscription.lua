@@ -10,26 +10,26 @@ local NatsErrorEnum = require('nats.utils.errors')
 ---@field private _queue string subscription queue
 ---@field private _max_msgs number maximum number of messages expected from a subscription
 ---@field private _received number number of messages received
----@field private _cb function function for automatic message processing
+---@field private _cb fun(msg:Message):void callback function for automatic message processing
 ---@field private _closed boolean is the subscription inactive
 ---@field private _pending_msgs_limit number maximum number of messages in the handler queue
 ---@field private _pending_bytes_limit number maximum number of bytes in the handler queue
 ---@field private _pending_queue Message[] message queue for processing
 ---@field private _pending_size number queue size in bytes
----@field public new function returns class instance
----@field public subject function returns subject
----@field public queue function returns queue
----@field public messages function returns an iterator function over the received messages
----@field public pending_msgs function returns the number of messages in the queue for processing
----@field public pending_bytes function returns the number of bytes in the queue for processing
----@field public delivered function returns the number of messages received
----@field public next_msg function returns the next message from the queue
----@field private _start function starts the message handler
----@field public drain function clears the message queue and stops the subscription
----@field private _drain function clears the message queue and stops the subscription
----@field public unsubscribe function unsubscribes from subscription
----@field private _stop_processing function ends subscription
----@field private _wait_for_msgs function automatic message processing function
+---@field public new fun(client: NatsClient, id: number, subject: string, queue: string|nil, cb: function, max_msgs: number, pending_msgs_limit: number, pending_bytes_limit: number):Subscription returns class instance
+---@field public subject fun():string returns subject
+---@field public queue fun():string returns queue
+---@field public messages fun():function returns an iterator function over the received messages
+---@field public pending_msgs fun():number returns the number of messages in the queue for processing
+---@field public pending_bytes fun():number returns the number of bytes in the queue for processing
+---@field public delivered fun():number returns the number of messages received
+---@field public next_msg fun():Message returns the next message from the queue
+---@field private _start fun():void starts the message handler
+---@field public drain fun():void clears the message queue and stops the subscription
+---@field private _drain fun():void clears the message queue and stops the subscription
+---@field public unsubscribe fun():void unsubscribes from subscription
+---@field private _stop_processing fun():void ends subscription
+---@field private _wait_for_msgs fun():void automatic message processing function
 local Subscription = {}
 Subscription.__index = Subscription
 

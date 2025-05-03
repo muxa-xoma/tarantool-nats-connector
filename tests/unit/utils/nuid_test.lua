@@ -40,7 +40,9 @@ end
 group.test_next_not_equal = function(cg)
     local iteration_number = 100000
     for _ = 1, iteration_number, 1 do
-        t.assert_not_equals(cg.module:next(), cg.module:next())
+        local prev = cg.module:next()
+        local next = cg.module:next()
+        t.assert_not_equals(prev, next)
     end
 end
 

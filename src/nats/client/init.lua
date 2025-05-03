@@ -36,9 +36,27 @@ local NatsClientStatus = {
 ---@field private _cb table<string, function> callbacks
 ---@field private _connection_params NatsConnectionParameters connection parameters
 ---@field private _params table<string, any> client parameters
+---@field private _status NatsClientStatus client status
+---@field private _nuid Nuid random string generator to generate unique subjects
+---@field private _command NatsClientCommand NATS command builder
+---@field private _parser NatsParser NATS protocol parser
+---@field private _flush_queue userdata fiber channel, used to wait for flushing messages
+---@field private _pending string pending data
+---@field private _sid number current subscription id
+---@field private _subs table<string, Subscription> subscriptions
+---@field private _resp_map table<string, function> map of pending responses
+---@field private _pongs string[]|userdata[] list of pending pongs
+---@field private _pings_outstanding number count of pending pings
+---@field private _pongs_received number count of received pongs
+---@field private _pending_data_size number count of pending data
+---@field public stats {in_msgs:number,out_msgs:number,in_bytes:number,out_bytes:number,reconnects:number,errors_received:number} statistics
+---@field private _transport Transport|nil transport
+---@field private _error Error|nil last error
+---@field private _current_server NatsServer|nil current server
 ---
 ---@field private _setup_server_pool fun(servers:string|table):void setup server pool
 ---@field private _setup_client_options fun(options:NatsConnectionParameters|nil):void setup client options
+---@field private _select_next_server fun():void select next server in pool
 local NatsClient = {}
 NatsClient.__index = NatsClient
 
@@ -167,6 +185,44 @@ function NatsClient._setup_client_options(self, options)
     }
     if #self._server_pool > 1 and not self._params.dont_randomize then
         table.sort(self._server_pool, function (_, _) return math.random(1, 2) == 1 end)
+    end
+end
+
+---@param self NatsClient class instance
+---@return void
+function NatsClient._select_next_server(self)
+    while true do
+        if #self._server_pool == 0 then
+            self._current_server = nil
+            error(NatsErrorEnum.no_servers)
+        end
+        local now = fiber.clock()
+        ---@type NatsServer
+        local serv = table.remove(self._server_pool, 1)
+        if self._params.max_reconnect_attempts > 0 then
+            if (self._params.max_reconnect_attempts - serv.reconnects) > 1 then
+                table.insert(self._server_pool, serv)
+            end
+        end
+        if serv.last_attempt ~= nil and now < serv.last_attempt + self._params.reconnect_time_wait then
+            fiber.sleep(self._params.reconnect_time_wait)
+        end
+        serv.last_attempt = fiber.clock()
+        if self._transport == nil then
+            -- TODO: Make a choice between TCP or WebSocket
+            self._transport = transport.TCPTransport.new(serv.uri.host, serv.uri.service, self._params.connect_timeout)
+        end
+        -- TODO: tls connection
+        local result = self._transport:connect()
+        if result.success then
+            self._current_server = serv
+            break
+        else
+            serv.last_attempt = fiber.clock()
+            serv.reconnects = serv.reconnects + 1
+            self._error = result.error
+            self._cb.error_cb(result.error)
+        end
     end
 end
 
@@ -543,44 +599,6 @@ end
 -- processes --
 
 ---@param self NatsClient class instance
----@return void
-function NatsClient._select_next_server(self)
-    while true do
-        if #self._server_pool == 0 then
-            self._current_server = nil
-            error(NatsErrorEnum.no_servers)
-        end
-        local now = fiber.clock()
-        ---@type NatsServer
-        local serv = table.remove(self._server_pool, 1)
-        if self._params.max_reconnect_attempts > 0 then
-            if (self._params.max_reconnect_attempts - serv.reconnects) > 1 then
-                table.insert(self._server_pool, serv)
-            end
-        end
-        if serv.last_attempt ~= nil and now < serv.last_attempt + self._params.reconnect_time_wait then
-            fiber.sleep(self._params.reconnect_time_wait)
-        end
-        serv.last_attempt = fiber.clock()
-        if self._transport == nil then
-            -- TODO: Make a choice between TCP or WebSocket
-            self._transport = transport.TCPTransport.new(serv.uri.host, serv.uri.service, self._params.connect_timeout)
-        end
-        -- TODO: tls connection
-        local result = self._transport:connect()
-        if result.success then
-            self._current_server = serv
-            break
-        else
-            serv.last_attempt = fiber.clock()
-            serv.reconnects = serv.reconnects + 1
-            self._error = result.error
-            self._cb.error_cb(result.error)
-        end
-    end
-end
-
----@param self NatsClient class instance
 ---@param info_string string json string with server information
 ---@param initial_connection boolean is this the first attempt to connect
 ---@return void
@@ -908,6 +926,7 @@ function NatsClient._process_msg(self, msg)
     if msg.type == protocol.NatsProtocolConstants.ok then
         return
     elseif msg.type == protocol.NatsProtocolConstants.err then
+        self.stats.errors_received = self.stats.errors_received + 1
         self:_process_err(self._parser.error_parse(msg.payload))
     elseif msg.type == protocol.NatsProtocolConstants.ping then
         self:_process_ping()

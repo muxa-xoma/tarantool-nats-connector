@@ -30,9 +30,9 @@ local Version = require('nats.utils.version')
 ---@field public cluster string|nil The name of the cluster
 ---@field public domain string|nil The configured NATS domain of the server
 ---@field public xkey string|nil The public key of a designated XKey (x25519) used for encrypting authorization payloads
----@field public new function returns an instance of the class
----@field private _check_required_params function checks required parameters
----@field private _parse_msg_info function recognizes server parameters
+---@field public new fun(info_s: string):NatsServerInfo returns an instance of the class
+---@field private _check_required_params fun():void checks required parameters
+---@field private _parse_msg_info fun(key: string, value: string|number|boolean|string[]):void recognizes server parameters
 local NatsServerInfo = {}
 NatsServerInfo.__index = NatsServerInfo
 

@@ -5,10 +5,10 @@
 ---@field public reply string subject to which the answer should be sent
 ---@field public payload string message payload
 ---@field public headers table <string, string> message headers
----@field public new function returns class instance
----@field public header function return headers table
----@field public sid function returns subscription ID from a message
----@field public respond function posts a reply to a message
+---@field public new fun(client: NatsClient, sid: number, subject: string, reply: string, payload: string, headers: table<string, string>):Message returns class instance
+---@field public header fun():table<string, string> returns headers table
+---@field public sid fun():number returns subscription ID from a message
+---@field public respond fun(payload: string):void posts a reply to a message
 local Message = {}
 Message.__index = Message
 

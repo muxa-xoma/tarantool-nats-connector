@@ -11,12 +11,12 @@ local NatsServerInfo = require('nats.protocol.server_info')
 ---@field public info NatsServerInfo|void information returned by the server
 ---@field public tls_name string|void server name for tls
 ---@field public last_attempt number|void time of last connection attempt
----@field public new function returns an instance of the class
----@field public set_server_info function sets server parameters
----@field public set_tls_name function sets tls name
----@field public need_connecting function marks as needing connection
----@field public server_discovered function marks as detected
----@field public server_version function return server version string
+---@field public new fun(string):NatsServer returns an instance of the class
+---@field public set_server_info fun(string):void sets server parameters
+---@field public set_tls_name fun(string):void sets tls name
+---@field public need_connecting fun():void marks as needing connection
+---@field public server_discovered fun():void marks as detected
+---@field public server_version fun():string return server version string
 local NatsServer = {}
 NatsServer.__index = NatsServer
 

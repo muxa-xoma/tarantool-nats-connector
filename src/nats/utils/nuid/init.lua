@@ -24,8 +24,8 @@ constants.TOTAL_LENGTH = constants.PREFIX_LENGTH + constants.SEQ_LENGTH
 ---@field private _prefix string random prefix
 ---@field private _randomize_prefix function generates random prefix
 ---@field private _reset_sequential function resets sequences
----@field public new function returns an instance of the class
----@field public next function returns random string
+---@field public new fun():Nuid returns an instance of the class
+---@field public next fun():string returns random string
 local Nuid = {}
 Nuid.__index = Nuid
 

@@ -5,8 +5,8 @@
 ---@field public patch number patch version
 ---@field public pre_release number|nil pre-release version
 ---@field public hash string|nil commit hash
----@field public new function returns an instance of the class
----@field public tostring function returns the version as a string
+---@field public new fun(version:string):Version returns an instance of the class
+---@field public tostring fun():string returns the version as a string
 local Version = {
     prefix = '',
     major = 0,

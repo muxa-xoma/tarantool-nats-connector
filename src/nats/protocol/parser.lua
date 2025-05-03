@@ -23,9 +23,9 @@ local NatsParserStatesEnum = {
 ---@field private _reset function resets class
 ---@field private _parse_control_msg function recognizes the control line of the message
 ---@field private _parse_msg_headers function recognizes message headers
----@field public new function returns an instance of the class
----@field public parse function returns the recognized message
----@field public error_parse function return recognized error
+---@field public new fun():NatsParser returns an instance of the class
+---@field public parse fun(data:string):Result returns the recognized message
+---@field public error_parse fun(err_string:string):NatsErrorEnum return recognized error
 local NatsParser = {}
 NatsParser.__index = NatsParser
 

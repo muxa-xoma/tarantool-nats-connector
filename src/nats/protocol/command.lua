@@ -1,14 +1,14 @@
 local NatsProtocolConstants = require('nats.protocol.constants')
 
 ---@class NatsClientCommand the class is a constructor of client commands
----@field public new function returns an instance of the class
----@field public connect function returns connection string
----@field public publish function returns publish string
----@field public headers_publish function returns publish string with headers
----@field public subscribe function returns subscribe string
----@field public unsubscribe function returns unsubscribe string
----@field public ping function returns ping string
----@field public pong function returns pong string
+---@field public new fun():NatsClientCommand returns an instance of the class
+---@field public connect fun(conf:string):string returns connect string
+---@field public publish fun(subject:string,payload:string,reply_subject:string):string returns publish string
+---@field public headers_publish fun(subject:string,payload:string,headers:table<string,string>,reply_subject:string):string returns publish string with headers
+---@field public subscribe fun(subject:string,sid:string|number,queue:string|nil):string returns subscribe string
+---@field public unsubscribe fun(sid:string|number):string returns unsubscribe string
+---@field public ping fun():string returns ping string
+---@field public pong fun():string returns pong string
 local NatsClientCommand = {}
 NatsClientCommand.__index = NatsClientCommand
 
