@@ -104,6 +104,23 @@ services:
           cpus: '0.25'
           memory: 256M
 
+  tarantool-integration-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: integration-tests
+    container_name: tarantool-integration-test
+    profiles:
+      - integration-test
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
   tarantool-unit-test:
     build:
       context: .
