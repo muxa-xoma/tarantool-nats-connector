@@ -18,8 +18,8 @@ local Version = require('nats.utils.version')
 ---@field public tls_required boolean|nil @If this is true, then the client must perform the TLS/1.2 handshake.
 ---@field public tls_verify boolean|nil @If this is true, the client must provide a valid certificate during the TLS handshake
 ---@field public tls_available boolean|nil @If this is true, the client can provide a valid certificate during the TLS handshake
----@field public connect_urls URI[]|nil @List of server urls that a client can connect to
----@field public ws_connect_urls URI[]|nil @List of server urls that a websocket client can connect to
+---@field public connect_urls string[]|nil @List of server urls that a client can connect to
+---@field public ws_connect_urls string[]|nil @List of server urls that a websocket client can connect to
 ---@field public ldm boolean|nil @If the server supports Lame Duck Mode notifications, and the current server has transitioned to lame duck, ldm will be set to true
 ---@field public git_commit string|nil @The git hash at which the NATS server was built
 ---@field public jetstream boolean|nil @Whether the server supports JetStream

@@ -1,5 +1,41 @@
 = Tarantool nats connector
 
+== Установка
+
+== Функционал
+
+=== Транспорт
+* [*] TCP
+* [ ] TCP TLS
+* [ ] WS
+* [ ] WSS
+
+=== Аутентификация
+* [ ] Token Authentication
+* [*] Plain Text Username/Password credentials
+* [ ] Bcrypted Username/Password credentials
+* [ ] TLS Certificate
+* [ ] NKEY with Challenge
+* [ ] Decentralized JWT Authentication/Authorization
+
+=== Кластер
+* [*] Переподключения
+* [*] Обнаруженные сервера (TCP)
+* [ ] Обнаруженные сервера (WS)
+
+=== Протоколы
+* [*] NATS
+* [ ] JetStream
+
+=== Функции
+* [*] Verbose mode
+* [ ] Pedantic mode
+* [*] Ping/pong interval
+* [*] Implementing request/response
+* [*] Error handling
+* [*] Disconnecting
+* [*] Reconnecting
+
 include::./doc/dependencies.adoc[leveloffset=+1]
 include::./doc/tests.adoc[leveloffset=+1]
 

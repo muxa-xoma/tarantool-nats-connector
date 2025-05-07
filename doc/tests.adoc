@@ -39,7 +39,7 @@ docker compose --profile unit-test down -v --rmi local
 [cols="4*", options="header"]
 |====================================================================
 | File                                    | Hits  | Missed | Coverage
-| nats/client/init.lua                    | 476   | 128    | 78.81%
+| nats/client/init.lua                    | 477   | 127    | 78.97%
 | nats/client/message.lua                 | 20    | 4      | 83.33%
 | nats/client/options.lua                 | 142   | 2      | 98.61%
 | nats/client/server.lua                  | 24    | 0      | 100.00%
@@ -50,7 +50,7 @@ docker compose --profile unit-test down -v --rmi local
 | nats/protocol/constants.lua             | 2     | 1      | 66.67%
 | nats/protocol/init.lua                  | 7     | 0      | 100.00%
 | nats/protocol/parser.lua                | 121   | 1      | 99.18%
-| nats/protocol/server_info.lua           | 77    | 0      | 100.00%
+| nats/protocol/server_info.lua           | 76    | 0      | 100.00%
 | nats/transport/init.lua                 | 3     | 0      | 100.00%
 | nats/transport/tcp.lua                  | 62    | 0      | 100.00%
 | nats/utils/errors/init.lua              | 80    | 6      | 93.02%
@@ -58,7 +58,7 @@ docker compose --profile unit-test down -v --rmi local
 | nats/utils/result/init.lua              | 15    | 0      | 100.00%
 | nats/utils/version/init.lua             | 25    | 0      | 100.00%
 | nats/version.lua                        | 3     | 0      | 100.00%
-| Total                                   | 1304  | 150    | 89.68%
+| Total                                   | 1304  | 149    | 89.75%
 |====================================================================
 
 === Start

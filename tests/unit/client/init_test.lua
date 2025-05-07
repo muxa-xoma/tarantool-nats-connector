@@ -359,6 +359,70 @@ group.test_process_connect_init_default = function(cg)
     nc:close()
 end
 
+group.test_process_connect_init_auth_required = function(cg)
+    local conn
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+    end
+    local server_info = table.deepcopy(cg.server_info)
+    server_info.auth_required = true
+    cg.mock_nats_server = MockNatsServer.new('127.0.0.1', 4223, server_info, connect_cb)
+    cg.mock_nats_server:start()
+    fiber.yield()
+    local nc = cg.module.new('nats://127.0.0.1:4223', { user = 'foo', password = 'bar' })
+    fiber.yield()
+    t.assert_equals(nc._current_server.info.server_id, cg.server_info.server_id)
+    t.assert_equals(nc._current_server.info.server_name, cg.server_info.server_name)
+    t.assert_equals(nc._current_server.info.version:tostring(), cg.server_info.version)
+    t.assert_equals(nc._current_server.info.proto, cg.server_info.proto)
+    t.assert_equals(nc._current_server.info.proto, conn.protocol)
+    t.assert_equals(nc._current_server.info.git_commit, cg.server_info.git_commit)
+    t.assert_equals('go' .. nc._current_server.info.go:tostring(), cg.server_info.go)
+    t.assert_equals(nc._current_server.info.headers, cg.server_info.headers)
+    t.assert_equals(nc._current_server.info.headers, conn.headers)
+    t.assert_equals(nc._current_server.info.max_payload, cg.server_info.max_payload)
+    t.assert_equals(nc._current_server.info.client_id, cg.server_info.client_id)
+    t.assert_equals(nc._current_server.info.xkey, cg.server_info.xkey)
+    t.assert_equals(nc._current_server.info.host, '127.0.0.1')
+    t.assert_equals(nc._current_server.info.port, 4223)
+    t.assert_equals(nc._current_server.info.client_ip, '127.0.0.1')
+    t.assert_equals(nc._current_server.info.auth_required, true)
+    nc:close()
+end
+
+group.test_process_connect_init_auth_required_not_username = function(cg)
+    local conn
+    local function connect_cb(sock, from, host, port, server_info)
+        server_info.host = host
+        server_info.port = port
+        server_info.client_ip = from.host
+        sock:write(NatsProtocolConstants.info .. ' ' .. json.encode(server_info) .. NatsProtocolConstants.delimiter)
+        local conn_info = sock:read(NatsProtocolConstants.delimiter)
+        conn = json.decode(string.lstrip(conn_info, NatsProtocolConstants.connect .. ' '))
+        local ping = sock:read(NatsProtocolConstants.delimiter)
+        t.assert_equals(ping, NatsProtocolConstants.ping .. NatsProtocolConstants.delimiter)
+        sock:write(NatsProtocolConstants.pong .. NatsProtocolConstants.delimiter)
+    end
+    local server_info = table.deepcopy(cg.server_info)
+    server_info.auth_required = true
+    cg.mock_nats_server = MockNatsServer.new('127.0.0.1', 4223, server_info, connect_cb)
+    cg.mock_nats_server:start()
+    fiber.yield()
+    local ok, err = pcall(cg.module.new, 'nats://127.0.0.1:4223', { password = 'bar', allow_reconnect = false })
+    t.assert_not(ok)
+    t.assert_equals(NatsErrorEnum.invalid_connect_params.code, err.code)
+    t.assert_equals(NatsErrorEnum.invalid_connect_params.type, err.type)
+    t.assert_str_contains(err.message, NatsErrorEnum.invalid_connect_params.message)
+end
+
 group.test_process_connect_init_read_info_error = function(cg)
     local function connect_cb(sock, _, _, _, _)
         sock:close()
