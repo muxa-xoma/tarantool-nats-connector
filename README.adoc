@@ -2,6 +2,14 @@
 
 == Установка
 
+Перед установкой модуля необходимо установить git, tarantool и tt.
+
+[source]
+----
+tt rocks install https://raw.githubusercontent.com/muxa-xoma/tarantool-nats-connector/refs/heads/dev/nats-dev-1.rockspec
+----
+
+
 == Функционал
 
 === Транспорт

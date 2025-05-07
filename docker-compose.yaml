@@ -16,6 +16,10 @@ services:
       - -DVV
       - -client_advertise
       - nats:4222
+      - --user
+      - dev
+      - --pass
+      - dev
 
   nats-cluster-1:
     image: nats:2.10.24-alpine3.21
