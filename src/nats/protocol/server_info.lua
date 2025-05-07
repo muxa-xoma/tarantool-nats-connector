@@ -1,5 +1,4 @@
 local json = require('json')
-local uri = require('uri')
 
 local Version = require('nats.utils.version')
 
@@ -98,12 +97,12 @@ function NatsServerInfo._parse_msg_info(self, key, value)
     elseif key == 'connect_urls' then
         self.connect_urls = {}
         for _, v in ipairs(value) do
-            table.insert(self.connect_urls, uri.parse(v))
+            table.insert(self.connect_urls, v)
         end
     elseif key == 'ws_connect_urls' then
         self.ws_connect_urls = {}
         for _, v in ipairs(value) do
-            table.insert(self.ws_connect_urls, uri.parse(v))
+            table.insert(self.ws_connect_urls, v)
         end
     elseif key == 'ldm' then
         self.ldm = value

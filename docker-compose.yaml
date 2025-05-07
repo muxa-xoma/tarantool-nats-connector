@@ -17,6 +17,76 @@ services:
       - -client_advertise
       - nats:4222
 
+  nats-cluster-1:
+    image: nats:2.10.24-alpine3.21
+    container_name: nats-1
+    profiles:
+      - dev
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    command:
+      - -DVV
+      - -client_advertise
+      - nats-1:4222
+      - --cluster_name
+      - nuts-dev-cluster
+      - --cluster
+      - nats://0.0.0.0:6222
+      - --http_port
+      - '8222'
+
+  nats-cluster-2:
+    image: nats:2.10.24-alpine3.21
+    container_name: nats-2
+    profiles:
+      - dev
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    command:
+      - -DVV
+      - -client_advertise
+      - nats-2:4222
+      - --cluster_name
+      - nuts-dev-cluster
+      - --cluster
+      - nats://0.0.0.0:6222
+      - --routes=nats://nats-1:6222,nats://nats-3:6222
+
+  nats-cluster-3:
+    image: nats:2.10.24-alpine3.21
+    container_name: nats-3
+    profiles:
+      - dev
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    command:
+      - -DVV
+      - -client_advertise
+      - nats-3:4222
+      - --cluster_name
+      - nuts-dev-cluster
+      - --cluster
+      - nats://0.0.0.0:6222
+      - --routes=nats://nats-1:6222,nats://nats-2:6222
+
   tarantool-dev:
     build:
       context: .
@@ -34,14 +104,14 @@ services:
           cpus: '0.25'
           memory: 256M
 
-  tarantool-test:
+  tarantool-unit-test:
     build:
       context: .
       dockerfile: Dockerfile
       target: test
-    container_name: tarantool-test
+    container_name: tarantool-unit-test
     profiles:
-      - test
+      - unit-test
     deploy:
       resources:
         limits:

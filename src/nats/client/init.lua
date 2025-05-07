@@ -631,7 +631,7 @@ function NatsClient._request(self, subject, payload, headers, timeout)
     local future = fiber.channel(1)
     local resp_subject = self:new_inbox()
     self._resp_map[resp_subject] = future
-    self:subscribe(resp_subject, nil, self._request_sub_callback)
+    self:subscribe(resp_subject, nil, self._request_sub_callback, 1)
     self:publish(subject, payload, resp_subject, headers)
     local result = future:get(timeout)
     future:close()
@@ -648,7 +648,7 @@ end
 ---@param timeout number|nil @response timeout
 ---@return Message
 function NatsClient.request(self, subject, payload, headers, timeout)
-    timeout = timeout or 0.5
+    timeout = timeout or self._params.connect_timeout
     return self:_request(subject, payload, headers, timeout)
 end
 
@@ -680,7 +680,7 @@ function NatsClient._process_info(self, info_string, initial_connection)
             -- TODO: setup tls_name
             local should_add = true
             for _, s in ipairs(self._server_pool) do
-                if serv.uri.host == s.uri.host then
+                if serv.uri.host == s.uri.host and serv.uri.service == s.uri.service then
                     should_add = false
                 end
             end

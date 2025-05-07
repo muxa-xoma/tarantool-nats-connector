@@ -10,11 +10,6 @@ docker compose --profile dev up -d
 sleep 1
 docker exec -it tarantool-dev console
 ----
-nats = require('nats')
-nc = nats.client.new('nats:4222')
-sub = nc:subscribe('test', 'test-q')
-nc:publish('test', 'test')
-
 
 === Stop
 
@@ -29,17 +24,42 @@ docker compose --profile dev down -v --rmi local
 
 [source,bash]
 ----
-docker compose --profile test up -d
+docker compose --profile unit-test up -d
 ----
 
 === Stop
 
 [source,bash]
 ----
-docker compose --profile test down -v --rmi local
+docker compose --profile unit-test down -v --rmi local
 ----
 
 == Покрытие
+
+[cols="4*", options="header"]
+|====================================================================
+| File                                    | Hits  | Missed | Coverage
+| nats/client/init.lua                    | 476   | 128    | 78.81%
+| nats/client/message.lua                 | 20    | 4      | 83.33%
+| nats/client/options.lua                 | 142   | 2      | 98.61%
+| nats/client/server.lua                  | 24    | 0      | 100.00%
+| nats/client/subscription.lua            | 101   | 7      | 93.52%
+| nats/init.lua                           | 3     | 0      | 100.00%
+| nats/protocol/command.lua               | 44    | 0      | 100.00%
+| nats/protocol/connection_parameters.lua | 63    | 0      | 100.00%
+| nats/protocol/constants.lua             | 2     | 1      | 66.67%
+| nats/protocol/init.lua                  | 7     | 0      | 100.00%
+| nats/protocol/parser.lua                | 121   | 1      | 99.18%
+| nats/protocol/server_info.lua           | 77    | 0      | 100.00%
+| nats/transport/init.lua                 | 3     | 0      | 100.00%
+| nats/transport/tcp.lua                  | 62    | 0      | 100.00%
+| nats/utils/errors/init.lua              | 80    | 6      | 93.02%
+| nats/utils/nuid/init.lua                | 36    | 1      | 97.30%
+| nats/utils/result/init.lua              | 15    | 0      | 100.00%
+| nats/utils/version/init.lua             | 25    | 0      | 100.00%
+| nats/version.lua                        | 3     | 0      | 100.00%
+| Total                                   | 1304  | 150    | 89.68%
+|====================================================================
 
 === Start
 
