@@ -10,9 +10,9 @@ description = {
     license = "Apache-2.0",
     maintainer = "Mikhael Fomenko <muxa-xoma@mail.ru>"
 }
-dependencies = {
-    "lua >= 5.1",
-}
+--dependencies = {
+--    "lua >= 5.1",
+--}
 build = {
     type = "builtin",
     modules = {

@@ -1,7 +1,7 @@
 FROM tarantool/tarantool:3.3.1 AS integration-tests
 LABEL authors="Mikhael Fomenko"
 
-RUN tt rocks install https://github.com/muxa-xoma/tarantool-nats-connector/blob/dev/nats-dev.rockspec
+RUN tt rocks install https://github.com/muxa-xoma/tarantool-nats-connector/blob/dev/nats-dev-1.rockspec
 
 FROM tarantool/tarantool:3.3.1 AS unit-tests
 LABEL authors="Mikhael Fomenko"
