@@ -1,8 +1,6 @@
 package = "nats"
 version = "scm-1"
 source = {
-    --url = "git+https://github.com/tarantool/expirationd.git",
-    --branch = "master",
     url = "file:///tmp/nats.tar.gz"
 }
 description = {
@@ -13,7 +11,6 @@ description = {
 }
 dependencies = {
     "lua >= 5.1",
-    --"checks >= 2.1",
 }
 build = {
     type = "builtin",

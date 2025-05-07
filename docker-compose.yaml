@@ -108,7 +108,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: test
+      target: unit-tests
     container_name: tarantool-unit-test
     profiles:
       - unit-test
@@ -132,7 +132,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: test
+      target: unit-tests
     container_name: tarantool-coverage
     profiles:
       - coverage

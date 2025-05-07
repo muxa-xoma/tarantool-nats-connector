@@ -1,4 +1,9 @@
-FROM tarantool/tarantool:3.3.1 AS test
+FROM tarantool/tarantool:3.3.1 AS integration-tests
+LABEL authors="Mikhael Fomenko"
+
+RUN tt rocks install https://github.com/muxa-xoma/tarantool-nats-connector/blob/dev/nats-dev.rockspec
+
+FROM tarantool/tarantool:3.3.1 AS unit-tests
 LABEL authors="Mikhael Fomenko"
 
 RUN apt-get update && \
@@ -16,6 +21,7 @@ COPY tests /opt/tarantool/tests
 COPY tests/local_spec/.luacov /opt/tarantool/.luacov
 
 FROM tarantool/tarantool:3.3.1 AS dev
+LABEL authors="Mikhael Fomenko"
 
 COPY src /tmp/src
 COPY tests/local_spec/nats-scm-1.rockspec /tmp/src/nats
@@ -24,4 +30,4 @@ COPY tests/local_spec/nats-scm-1.rockspec /tmp
 RUN cd /tmp/src && tar czf /tmp/nats.tar.gz ./nats
 RUN tt rocks install /tmp/nats-scm-1.rockspec
 
-#RUN apt update -y && apt upgrade -y && apt install -y zlib1g-dev   - https://www.tarantool.io/ru/doc/latest/platform/app/cookbook/#ffi-zlib-lua
+
