@@ -1,7 +1,11 @@
 FROM tarantool/tarantool:3.3.1 AS integration-tests
 LABEL authors="Mikhael Fomenko"
 
-RUN tt rocks install https://github.com/muxa-xoma/tarantool-nats-connector/blob/dev/nats-dev-1.rockspec
+RUN apt-get update && \
+    apt-get -y install \
+        git
+
+RUN tt rocks install https://raw.githubusercontent.com/muxa-xoma/tarantool-nats-connector/refs/heads/dev/nats-dev-1.rockspec
 
 FROM tarantool/tarantool:3.3.1 AS unit-tests
 LABEL authors="Mikhael Fomenko"
@@ -29,5 +33,7 @@ COPY tests/local_spec/nats-scm-1.rockspec /tmp
 
 RUN cd /tmp/src && tar czf /tmp/nats.tar.gz ./nats
 RUN tt rocks install /tmp/nats-scm-1.rockspec
+
+COPY nats-dev-1.rockspec /
 
 
