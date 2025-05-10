@@ -6,7 +6,7 @@
 
 [source]
 ----
-tt rocks install https://raw.githubusercontent.com/muxa-xoma/tarantool-nats-connector/refs/heads/dev/nats-v0.1.0-1.rockspec
+tt rocks install https://raw.githubusercontent.com/muxa-xoma/tarantool-nats-connector/refs/tags/v0.1.0/nats-v0.1.0-1.rockspec
 ----
 
 == Примеры использования
