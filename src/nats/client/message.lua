@@ -51,7 +51,7 @@ end
 ---@param payload string @return message payload
 ---@return void
 function Message.respond(self, payload)
-    if self.reply == nil then
+    if self.reply == nil or self.reply == '' then
         error('no reply subject available')
     end
     if self._client == nil  then

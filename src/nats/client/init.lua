@@ -380,7 +380,7 @@ function NatsClient.drain(self)
     end
     self._status = NatsClientStatus.draining_pubs
     self:flush()
-    self._close(NatsClientStatus.closed)
+    self:_close(NatsClientStatus.closed)
 end
 
 -- closed --
