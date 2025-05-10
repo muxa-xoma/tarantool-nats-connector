@@ -1,11 +1,19 @@
 FROM tarantool/tarantool:3.3.1 AS integration-tests
 LABEL authors="Mikhael Fomenko"
 
-RUN apt-get update && \
-    apt-get -y install \
-        git
+COPY src /tmp/src
+COPY tests/local_spec/nats-scm-1.rockspec /tmp/src/nats
+COPY tests/local_spec/nats-scm-1.rockspec /tmp
 
-RUN tt rocks install https://raw.githubusercontent.com/muxa-xoma/tarantool-nats-connector/refs/heads/dev/nats-dev-1.rockspec
+RUN cd /tmp/src && tar czf /tmp/nats.tar.gz ./nats
+
+COPY tests/integration/test-app-lua /opt/tarantool/test-app-lua
+RUN cd /opt/tarantool/test-app-lua && tt rocks install /tmp/nats-scm-1.rockspec
+
+ENV TT_APP_NAME=test-app-lua
+ENV TT_INSTANCE_NAME=nats-integration-test-1
+
+CMD ["tarantool"]
 
 FROM tarantool/tarantool:3.3.1 AS unit-tests
 LABEL authors="Mikhael Fomenko"

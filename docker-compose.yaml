@@ -4,6 +4,7 @@ services:
     container_name: nats
     profiles:
       - dev
+      - integration-test
     deploy:
       resources:
         limits:
@@ -26,6 +27,7 @@ services:
     container_name: nats-1
     profiles:
       - dev
+      - integration-test
     deploy:
       resources:
         limits:
@@ -50,6 +52,7 @@ services:
     container_name: nats-2
     profiles:
       - dev
+      - integration-test
     deploy:
       resources:
         limits:
@@ -73,6 +76,7 @@ services:
     container_name: nats-3
     profiles:
       - dev
+      - integration-test
     deploy:
       resources:
         limits:
@@ -113,7 +117,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: integration-tests
-    container_name: tarantool-integration-test
+    container_name: tarantool-integration-test-1
     profiles:
       - integration-test
     deploy:

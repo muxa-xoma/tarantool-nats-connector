@@ -1,0 +1,22 @@
+app:
+  ip: 0.0.0.0
+  port: 8080
+  results_path: /results
+  runner_path: /run
+
+log:
+  level: debug
+  format: json
+  output: console
+
+nats:
+  - urls: 'nats://nats:4222'
+    user: 'dev'
+    pass: 'dev'
+  - urls: 'nats://nats-1:4222,nats://nats-2:4222,nats://nats-3:4222'
+
+tarantool:
+  host: tarantool-integration-test-1
+  port: 3301
+  user: 'client'
+  pass: 'secret'

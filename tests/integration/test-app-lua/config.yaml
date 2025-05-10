@@ -1,0 +1,25 @@
+app:
+  file: '/opt/tarantool/test-app-lua/nats_app.lua'
+
+log:
+  to: stderr
+  format: json
+  level: info
+
+credentials:
+  users:
+    client:
+      password: 'secret'
+      roles: [super]
+
+groups:
+  nats-integration-test:
+    replicasets:
+      test:
+        instances:
+          nats-integration-test-1:
+            iproto:
+              listen:
+                - uri: '0.0.0.0:3301'
+              advertise:
+                client: 'tarantool-integration-test-1:3301'
