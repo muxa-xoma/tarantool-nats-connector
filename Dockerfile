@@ -42,6 +42,5 @@ COPY tests/local_spec/nats-scm-1.rockspec /tmp
 RUN cd /tmp/src && tar czf /tmp/nats.tar.gz ./nats
 RUN tt rocks install /tmp/nats-scm-1.rockspec
 
-COPY nats-dev-1.rockspec /
 
 

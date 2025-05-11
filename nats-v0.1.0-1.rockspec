@@ -1,8 +1,8 @@
 package = "nats"
-version = "dev-1"
+version = "v0.1.0-1"
 source = {
     url = "git+https://github.com/muxa-xoma/tarantool-nats-connector.git",
-    branch = "dev",
+    tag = "v0.1.0"
 }
 description = {
     summary = "NATS connector for Tarantool",
