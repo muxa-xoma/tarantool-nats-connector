@@ -46,6 +46,7 @@ function TCPTransport.connect(self)
         return Result.new(nil, NatsErrorEnum.tcp_transport, err)
     end
     self._socket = con
+    self._socket:nonblock(true)
     return Result.new(true)
 end
 

@@ -1,19 +1,18 @@
 app:
-  ip: 0.0.0.0
+  ip: tester-integration
   port: 8080
   results_path: /results
   runner_path: /run
 
 log:
-  level: debug
+  level: info
   format: json
   output: console
 
 nats:
-  - urls: 'nats://nats:4222'
-    user: 'dev'
-    pass: 'dev'
-  - urls: 'nats://nats-1:4222,nats://nats-2:4222,nats://nats-3:4222'
+  urls: 'nats://nats:4222'
+  user: 'dev'
+  pass: 'dev'
 
 tarantool:
   host: tarantool-integration-test-1

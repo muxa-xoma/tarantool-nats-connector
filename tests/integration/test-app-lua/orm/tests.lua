@@ -80,7 +80,9 @@ function TestsORM._create_space(self)
                 type = 'map',
                 is_nullable = true
             }
-        }
+        },
+        if_not_exists = true,
+        engine = 'memtx'
     })
     self._pk_idx = self._space:create_index(self._name .. '_pk', {
         parts = {'id'},

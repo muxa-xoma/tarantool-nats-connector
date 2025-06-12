@@ -47,12 +47,11 @@ async def get_config(file_path: str = './conf.yaml') -> Config:
     return Config(
         app=app,
         log=log,
-        nats=[NatsConfig(
-            urls=nc['urls'],
-            user=nc.get('user'),
-            password=nc.get('pass'),
-
-        ) for nc in config['nats']],
+        nats=NatsConfig(
+            urls=config['nats']['urls'],
+            user=config['nats'].get('user'),
+            password=config['nats'].get('pass')
+        ),
         tarantool=TarantoolConfig(
             host=config['tarantool']['host'],
             port=config['tarantool']['port'],

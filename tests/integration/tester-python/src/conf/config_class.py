@@ -36,7 +36,7 @@ class TarantoolConfig:
 
 @dataclass(slots=True)
 class Config:
-    nats: list[NatsConfig]
+    nats: NatsConfig
     app: AppConfig
     log: LogConfig
     tarantool: TarantoolConfig

@@ -29,13 +29,11 @@ config_schema = {
         Optional('user'): And(str, len),
         Optional('pass'): And(str, len)
     },
-    'nats': [
-        {
-            'urls': And(list[ParseResult], Use(str_to_url), lambda urls: all(url.scheme == 'nats' for url in urls)),
-            Optional('user'): And(str, len),
-            Optional('pass'): And(str, len)
-        }
-    ]
+    'nats': {
+        'urls': And(list[ParseResult], Use(str_to_url), lambda urls: all(url.scheme == 'nats' for url in urls)),
+        Optional('user'): And(str, len),
+        Optional('pass'): And(str, len)
+    }
 }
 
 

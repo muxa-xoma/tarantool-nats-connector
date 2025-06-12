@@ -44,12 +44,7 @@ docker compose --profile unit-test down -v --rmi local
 ----
 docker compose --profile integration-test up -d
 ----
-create_test_nats('nats:4222', { user = 'dev', password = 'dev' }, 'http://tarantool-dev:8080/results')
-TestNats:publish_test_start({subject = 'test'})
 
-nats = require('nats')
-nc = nats.NatsClient.new('nats:4222', { user = 'dev', password = 'dev' })
-sub = nc:subscribe('test')
 ==== Stop
 
 [source,bash]

@@ -60,6 +60,7 @@ function TestNats._result_test_publish(self, id, err)
     local body, response
     local count = 5
     local result = self._tests:get(id)
+    log.debug("Result url: %s", self._result_url)
     if not result[1] then
         log.error("Test with id %s not found", id)
         body = { error = true, id = id }
@@ -82,7 +83,7 @@ function TestNats._result_test_publish(self, id, err)
         response = self._http:post(self._result_url, body)
     end
     if response.status ~= 200 then
-        log.error("Error publishing result to test service")
+        log.error("Error publishing result to test service - %s", response.status)
     else
         log.debug("Result published to test service")
     end
@@ -122,6 +123,7 @@ function TestNats._publish_test_work(self, test_id, options)
                     payload, headers, options.reply, nil, payload.published_at, nil
             )
             err = false
+            fiber.yield()
         end
     elseif options.work_time ~= nil then
         while start_time >= datetime.now():sub{ sec = options.work_time } do
@@ -133,6 +135,7 @@ function TestNats._publish_test_work(self, test_id, options)
                     payload, headers, options.reply, nil, payload.published_at, nil
             )
             err = false
+            fiber.yield()
         end
     else
         log.error("Test options are not valid")
@@ -202,8 +205,8 @@ function TestNats._publish_test_report(self, test_id, fibers_t)
         test_result.received_msg_count = #fibers_t
         local worked_messages = {}
         for _, v in ipairs(fibers_t) do
-            local result = v:join()
-            if result[1] then
+            local ok, result = v:join()
+            if ok and result[1] then
                 table.insert(worked_messages, result[2])
             end
         end
@@ -250,6 +253,7 @@ function TestNats.publish_test_end(self, test_id, received_t)
     fiber.new(self._publish_test_report, self, test_id, fibers)
     return { true, test_id }
 end
+
 
 ---@param name string @name of test
 ---@param servers string[]|string @servers for nats

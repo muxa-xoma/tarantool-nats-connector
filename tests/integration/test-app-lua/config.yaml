@@ -16,6 +16,8 @@ groups:
   nats-integration-test:
     replicasets:
       test:
+        memtx:
+          memory: 2147483648
         instances:
           nats-integration-test-1:
             iproto:

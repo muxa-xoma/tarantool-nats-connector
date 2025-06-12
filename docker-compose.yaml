@@ -14,7 +14,6 @@ services:
           cpus: '0.25'
           memory: 256M
     command:
-      - -DVV
       - -client_advertise
       - nats:4222
       - --user
@@ -37,7 +36,6 @@ services:
           cpus: '0.25'
           memory: 256M
     command:
-      - -DVV
       - -client_advertise
       - nats-1:4222
       - --cluster_name
@@ -62,7 +60,6 @@ services:
           cpus: '0.25'
           memory: 256M
     command:
-      - -DVV
       - -client_advertise
       - nats-2:4222
       - --cluster_name
@@ -86,7 +83,6 @@ services:
           cpus: '0.25'
           memory: 256M
     command:
-      - -DVV
       - -client_advertise
       - nats-3:4222
       - --cluster_name
@@ -120,6 +116,26 @@ services:
     container_name: tarantool-integration-test-1
     profiles:
       - integration-test
+    ports:
+      - '127.0.0.1:3301:3301'
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 6G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  tester-integration:
+    build:
+      context: tests/integration/tester-python
+      dockerfile: Dockerfile
+    container_name: tester-integration
+    profiles:
+      - integration-test
+    ports:
+      - '127.0.0.1:8080:8080'
     deploy:
       resources:
         limits:
